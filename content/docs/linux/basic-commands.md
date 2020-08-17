@@ -1,8 +1,9 @@
 # 一些基础的命令
 
 ## 查看文件
-- cat 
-- head 查看文件开头 
+
+- cat
+- head 查看文件开头
   - `head -5 <file>`，显示开头 5 行的内容
 - tail 查看文件结尾
   - `-f` 同步显示更新内容
@@ -10,7 +11,9 @@
   - `wc -l <file>` 统计文件内容有多少行
   
 ## 打包压缩
+
 Linux 里面打包和压缩是分开的两个命令：
+
 - tar 打包备份 `tar -cf /tmp/backup.tar /etc` 把 `/etc` 目录打包到 `/tmp/backup.tar` 文件
   - `-c` 打包
   - `-f` 指定打包的文件
