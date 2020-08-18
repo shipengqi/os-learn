@@ -53,3 +53,31 @@ chmod a-wx,a+r file # 同上例
 chmod -R u+r directory # 递归地给 directory 目录下所有文件和子目录的属主分配读的权限
 chmod 4755 # 设置 UID，给属主分配读、写和执行权限，给组和其他用户分配读、执行的权限。
 ```
+
+### 特殊权限
+
+- SUID 用于可执行文件，执行命令时获取文件属主权，如 `/usr/bin/passwd`。
+- SGID 用于目录，在该目录下创建新的文件和目录，权限自动更改为该目录的属组。
+- SBIT 用于目录，该目录下创建文件和目录，仅 root 和自己可以删除，如 `/tmp`。
+
+#### SUID
+
+`ls -ld /usr/bin/passwd`：
+
+```bash
+-rwsr-xr-x. 1 root root 27832 Jan 30  2014 /usr/bin/passwd
+```
+
+`-rws` 这里的 s 表示，在执行 `/usr/bin/passwd` 时，会以文件的属主，也就是 root 身份来执行。
+
+如果要设置 SUID，使用 `chmod 4xxx <file>`, 4 加上原有的权限就可以了。
+
+#### SBIT
+
+```bash
+drwxrwxrwt.  14 root root 4096 Aug 18 20:11 tmp
+```
+
+`rwt` 里的 `t` 就表示该文件仅 root 和自己可以删除。
+
+如果要设置 SBIT，使用 `chmod 1xxx <file>`, 4 加上原有的权限就可以了。
