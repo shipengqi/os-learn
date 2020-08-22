@@ -201,7 +201,17 @@ listening on virbr0, link-type EN10MB (Ethernet), capture size 262144 bytes
 
 抓到的数据包会实时显示出来。
 
-<https://www.cnblogs.com/williamjie/p/9983958.html>
+常用的操作：
+
+- `tcpdump -i eth1` 监听指定网口的数据包。不指定的情况下默认监听第一个网口，一般是 eth0。
+- `tcpdump -i any -n` 监听所有网口的数据包。`-n` 不解析域名。
+- `tcpdump host 192.155.17.1` ，截获所有 IP 为 `192.155.17.1` 的主机接收和发送的所有数据包。
+- `tcpdump -c 20` 截获 20 个数据包就结束。`-c` 指定数据包的数量。
+- `tcpdump -i eth0 src host hostname>` 截获从主机 hostname 发送的所有数据包
+- `tcpdump -i eth0 src host hostname` 监听所有发送到主机 hostname 的数据包
+- `tcpdump udp port 123` 监听 123 端口的 udp 数据包。就是监听 ntp 的服务端口。
+- `tcpdump tcp port 23 and host 192.155.17.1` 监听 23 端口，从主机 192.155.17.1 接收或发出的 tcp 数据包。就是监听 telnet 包。
+- `tcpdump tcp port 23 and host 192.155.17.1 -w /tmp/test.dump`，`-w` 表示包截获的数据 dump 到文件中。
 
 ### netstat
 
@@ -241,7 +251,17 @@ tcp6       0      0 ::1:6011                :::*                    LISTEN      
 
 ```
 
+常用的参数：
+
+- `-n` 不解析域名
+- `-p` 显示进程号
+- `-l` 显示监听（LISTEN）服务
+- `-t` 显示 tcp 协议
+- `-i` 显示网卡列表
+
 ### ss
+
+属于 iproute2 工具包，类似 netstat，参数类似，显示格式不同。
 
 ```bash
 [root@shcCDFrh75vm8 ~]# ss -ntpl
@@ -269,7 +289,121 @@ LISTEN     0      128                           ::1:6012                        
 - `systemctl start|stop|restart|status NetworkManager`
 - `systemctl enable|disable NetworkManager`
 
-network 和 NetworkManager 是两套网络管理工具，应该只使用其中一套。
+CentOS 7 中，systemctl 是 service 的替代品。
 
-- `/etc/sysconfig/network-scripts/ifcfg-eth0` 网卡配置文件，名称是动态的
-- `/etc/hosts`
+network 和 NetworkManager 是两套网络管理工具，应该只使用其中一套，禁用另一套。CentOS 6 之前只有 network 服务。
+
+## 配置文件
+
+- `/etc/sysconfig/network-scripts/ifcfg-eth0` 网卡配置文件，名称是动态的。`eth0` 对应的是网卡的名称。
+- `/etc/hosts` host 文件。
+
+### 查看 network 状态
+
+```bash
+[root@shcCDFrh75vm8 ~]# service network status
+Configured devices:
+lo Profile_1 ens32
+Currently active devices:
+lo ens32 virbr0 docker0
+```
+
+重新初始化设置：
+
+```bash
+[root@shcCDFrh75vm8 ~]# service network restart
+Restarting network (via systemctl) # 其实还是使用的 systemctl
+```
+
+这条命令会还原之前使用命令做的配置。
+
+使用 systemctl 管理 NetworkManager。
+
+查看服务：
+
+```bash
+[root@shcCDFrh75vm8 ~]# systemctl list-unit-files NetworkManager.service
+UNIT FILE              STATE  
+NetworkManager.service enabled
+
+1 unit files listed.
+
+```
+
+### 关闭 network 服务
+
+```bash
+[root@shcCDFrh75vm8 ~]# chkconfig --list network   # 查看
+
+Note: This output shows SysV services only and does not include native
+      systemd services. SysV configuration data might be overridden by native
+      systemd configuration.
+
+      If you want to list systemd services use 'systemctl list-unit-files'.
+      To see services enabled on particular target use
+      'systemctl list-dependencies [target]'.
+
+network         0:off 1:off 2:on 3:on 4:on 5:on 6:off
+[root@shcCDFrh75vm8 ~]# chkconfig --level 2345 network off # 禁用
+
+Note: This output shows SysV services only and does not include native
+      systemd services. SysV configuration data might be overridden by native
+      systemd configuration.
+
+      If you want to list systemd services use 'systemctl list-unit-files'.
+      To see services enabled on particular target use
+      'systemctl list-dependencies [target]'.
+
+network         0:off 1:off 2:on 3:on 4:on 5:on 6:off
+
+```
+
+### 网卡配置文件
+
+```bash
+[root@shcCDFrh75vm8 network-scripts]# cat ifcfg-ens32
+HWADDR=00:50:56:b0:71:0e
+NAME=ens32
+DEVICE=ens32
+DNS1=16.187.185.201
+DNS2=16.187.185.202
+DOMAIN=hpeswlab.net
+ONBOOT=yes      # 开机时是否启用该网卡
+USERCTL=no
+PEERDNS=no
+BOOTPROTO=dhcp  # dhcp 动态分配 IP ，"none" 静态 IP
+#  静态 IP 需要的配置
+#IPADDR=<IP>
+#NETMASK=<子网掩码>
+#GATEWAY=<网关 IP>
+
+check_link_down() {
+ return 1;
+}
+ZONE=public
+
+```
+
+使配置生效：
+
+```bash
+service network restart
+# 或者
+systemctl restart NetworkManager
+```
+
+### 修改主机名
+
+执行 `hostname` 可以查看当前主机名。
+
+```bash
+# 临时修改主机名
+hostname pooky75vm8.lab.net
+
+# 永久生效，重启也不会改变
+hostnamectl set-hostname pooky75vm8.lab.net
+```
+
+有些服务是依赖主机名的，修改主机名会影响这些服务。需要修改 host 文件 `/etc/hosts`，添加一行映射：`127.0.0.1 pooky75vm8.lab.net`。
+
+否则某些服务启动时，可能会卡住。
