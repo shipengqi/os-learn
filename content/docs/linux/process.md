@@ -219,11 +219,131 @@ KiB Swap:        0 total,        0 free,        0 used. 14404532 avail Mem
 
 再下面的信息是动态的进程信息。
 
+常用参数：
+
+- `-d` 指定信息刷新的时间间隔。也可以使用按键 `s` 交互命令来改变。
+- `-p` 指定进程 ID ，值显示指定进程的状态。
+- `-i` 不显示闲置或者僵死进程。
+- `-c` 显示整个命令行而不只是显示命令名。
+
 ## 进程控制
 
 - 调整进程的优先级
   - nice 范围从 `-20` 到 `19`，值越小表示优先级越高，抢占资源就越多
   - renice 重新这是优先级
 - 进程的作业控制
+  - `&` 符号，后台运行进程，`./a.sh &`。
   - jobs
-  - `&` 符号  
+
+### nice
+
+`a.sh` 是一个死循环的脚本：
+
+```bash
+#!/bin/bash
+
+echo $$
+
+while :
+do
+  :
+done
+```  
+
+然后修改运行权限并运行：
+
+```bash
+[root@pooky ~]# ./a.sh
+23248
+```
+
+打开一个新的终端：
+
+```bash
+[root@pooky ~]# top -p 23294
+top - 07:53:53 up 62 days, 21:33,  4 users,  load average: 0.47, 0.15, 0.09
+Tasks:   1 total,   1 running,   0 sleeping,   0 stopped,   0 zombie
+%Cpu0  :  0.0 us,  0.0 sy,  0.0 ni,100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+%Cpu1  :  0.0 us,  0.0 sy,  0.0 ni,100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+%Cpu2  :  0.0 us,  0.0 sy,  0.0 ni,100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+%Cpu3  :100.0 us,  0.0 sy,  0.0 ni,  0.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+%Cpu4  :  0.0 us,  0.0 sy,  0.0 ni,100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+%Cpu5  :  0.0 us,  0.0 sy,  0.0 ni,100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+%Cpu6  :  0.0 us,  0.0 sy,  0.0 ni,100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+%Cpu7  :  0.0 us,  0.0 sy,  0.0 ni,100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+KiB Mem : 16266780 total,  7566888 free,  1105816 used,  7594076 buff/cache
+KiB Swap:        0 total,        0 free,        0 used. 14390072 avail Mem
+
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND
+23294 root      20   0  113176   1192   1008 R 100.0  0.0   0:23.15 a.sh
+```
+
+可以看到进程已经占满了一个 CPU。进程的状态栏中 `PR` 就是进程的优先级， `NI` 就是 nice 值。
+
+重新设置优先级，先把进程退出，然后使用 nice 命令设置：
+
+```bash
+[root@pooky ~]# nice -n 10 ./a.sh
+23780
+
+# 打开新的终端
+[root@pooky ~]# top -p 23780
+top - 07:58:04 up 62 days, 21:37,  4 users,  load average: 0.45, 0.47, 0.25
+Tasks:   1 total,   1 running,   0 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  0.2 us,  0.1 sy, 12.5 ni, 87.2 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+KiB Mem : 16266780 total,  7567992 free,  1104504 used,  7594284 buff/cache
+KiB Swap:        0 total,        0 free,        0 used. 14391492 avail Mem
+
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND
+23780 root      30  10  113176   1188   1004 R  92.4  0.0   0:11.20 a.sh
+```
+
+如果要对已经运行的进程，不想停掉进程，来设置 nice 值，可以使用 renice：
+
+```bash
+[root@pooky ~]# renice -n 15 23780
+24155 (process ID) old priority 10, new priority 15
+
+# 打开新的终端
+[root@pooky ~]# top -p 23780
+```
+
+### jobs
+
+加上 `&` 可以使进程后台运行，要把后台运行的进程掉回前台，使用 jobs 命令：
+
+```bash
+[root@pooky ~]# ./a.sh &
+[1] 24397
+[root@pooky ~]# jobs
+[1]+  Running                 ./a.sh &
+[root@pooky ~]# fg 1
+./a.sh
+
+```
+
+运行 `fg <job 号>` 将进程调回前台。
+
+#### 前台进程调到后台
+
+```bash
+[root@pooky ~]# ./a.sh
+24682
+^Z
+[1]+  Stopped                 ./a.sh
+[root@pooky ~]# top -p 24682
+top - 08:12:06 up 62 days, 21:51,  5 users,  load average: 0.07, 0.50, 0.45
+Tasks:   1 total,   0 running,   0 sleeping,   1 stopped,   0 zombie
+%Cpu(s):  0.8 us,  0.8 sy,  0.0 ni, 98.4 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+KiB Mem : 16266780 total,  7564728 free,  1107784 used,  7594268 buff/cache
+KiB Swap:        0 total,        0 free,        0 used. 14388276 avail Mem
+
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND
+24682 root      20   0  113176   1188   1008 T   0.0  0.0   0:01.81 a.sh
+```
+
+`ctrl + z` 可以将前台进程调度到后台，但是状态是停止的。状态栏 `S` 的值是 `T` 就表示已停止。
+
+要想恢复继续到前台就使用 `jobs` 加 `fg`。如果想要恢复到后台运行使用 `bd <job 号>`。
+
+## 守护进程
