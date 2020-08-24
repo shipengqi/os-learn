@@ -346,4 +346,108 @@ KiB Swap:        0 total,        0 free,        0 used. 14388276 avail Mem
 
 要想恢复继续到前台就使用 `jobs` 加 `fg`。如果想要恢复到后台运行使用 `bd <job 号>`。
 
+## kill
+
+`kill -l` 可以查看所有信号：
+
+```bash
+[root@pooky ~]# kill -l
+ 1) SIGHUP  2) SIGINT  3) SIGQUIT  4) SIGILL  5) SIGTRAP
+ 6) SIGABRT  7) SIGBUS  8) SIGFPE  9) SIGKILL 10) SIGUSR1
+11) SIGSEGV 12) SIGUSR2 13) SIGPIPE 14) SIGALRM 15) SIGTERM
+16) SIGSTKFLT 17) SIGCHLD 18) SIGCONT 19) SIGSTOP 20) SIGTSTP
+21) SIGTTIN 22) SIGTTOU 23) SIGURG 24) SIGXCPU 25) SIGXFSZ
+26) SIGVTALRM 27) SIGPROF 28) SIGWINCH 29) SIGIO 30) SIGPWR
+31) SIGSYS 34) SIGRTMIN 35) SIGRTMIN+1 36) SIGRTMIN+2 37) SIGRTMIN+3
+38) SIGRTMIN+4 39) SIGRTMIN+5 40) SIGRTMIN+6 41) SIGRTMIN+7 42) SIGRTMIN+8
+43) SIGRTMIN+9 44) SIGRTMIN+10 45) SIGRTMIN+11 46) SIGRTMIN+12 47) SIGRTMIN+13
+48) SIGRTMIN+14 49) SIGRTMIN+15 50) SIGRTMAX-14 51) SIGRTMAX-13 52) SIGRTMAX-12
+53) SIGRTMAX-11 54) SIGRTMAX-10 55) SIGRTMAX-9 56) SIGRTMAX-8 57) SIGRTMAX-7
+58) SIGRTMAX-6 59) SIGRTMAX-5 60) SIGRTMAX-4 61) SIGRTMAX-3 62) SIGRTMAX-2
+63) SIGRTMAX-1 64) SIGRTMAX
+```
+
+一共有 64 个信号。常用的 `ctrl + c` 就是 `SIGINT` 信号。
+
+`kill -<信号的编号> <进程号>` 比如 `kill -9 28317` 杀死 `28317` 进程，不受任何阻断。注意 1 号进程是杀不掉的。
+
 ## 守护进程
+
+- 使用 nohup 和 `&` 运行命令，nohup 命令会忽略 hangup 信号。
+- 守护（daemon）进程，如 linux 的 service。
+
+### nohup
+
+当我们在终端运行一个进程时，如果终端关闭，那么进程也会被杀死，如果不想进程被杀死，可以使用 nohup 命令：
+
+```bash
+[root@pooky ~]# nohup tail -f /var/log/messages &
+[1] 11725
+nohup: ignoring input and appending output to ‘nohup.out’
+```
+
+nohup 即使关掉终端，进程依然运行。`&` 是后台运行。命令的输出会输出到 `nohup.out`。
+
+执行 `ps -ef | grep tail` 查看进程：
+
+```bash
+[root@pooky ~]# ps -ef | grep tail
+root     11725 10056  0 21:06 pts/1    00:00:00 tail -f /var/log/messages
+root     11840 10056  0 21:08 pts/1    00:00:00 grep --color=auto tail
+```
+
+关闭终端，再次查看：
+
+```bash
+[root@pooky 1320]# ps -ef | grep tail
+root     11725     1  0 21:06 ?        00:00:00 tail -f /var/log/messages
+root     11911 11454  0 21:09 pts/2    00:00:00 grep --color=auto tail
+```
+
+11725 进程还在，但是父进程变成了 1。因为 11725 的父进程终端被关掉了，11725 就变成了孤儿进程，孤儿进程会被 1 号进程（systemd）收留。daemon 进程其实也是类似的原理，自动结束了父进程，被 1 号进程收留。
+
+进程的信息会输出到 `/proc/` 目录下：
+
+```bash
+[root@pooky 1320]# cd /proc/11725
+[root@pooky 11725]# ll cwd
+lrwxrwxrwx. 1 root root 0 Aug 24 21:13 cwd -> /root
+[root@pooky 11725]# ll fd
+total 0
+l-wx------. 1 root root 64 Aug 24 21:13 0 -> /dev/null
+l-wx------. 1 root root 64 Aug 24 21:13 1 -> /root/nohup.out
+l-wx------. 1 root root 64 Aug 24 21:08 2 -> /root/nohup.out
+lr-x------. 1 root root 64 Aug 24 21:13 3 -> /var/log/messages
+lr-x------. 1 root root 64 Aug 24 21:13 4 -> anon_inode:inotify
+
+```
+
+`ll cwd` 可以看出 `tail` 命令实在 `/root` 下执行的，那么 `/root` 目录就不能被卸载，因为
+`tail` 命令正在使用这个目录。
+
+`fd` 文件下，可以查看进程的输入输出。0，1，2 分别是标准输入，标准输出，标准错误输出。`0 -> /dev/null` 表示标准输入被关掉。
+
+### daemon
+
+daemon 不需要终端，比如 service。这种进程因为没有终端输出，所以需要日志文件来记录。
+
+```bash
+[root@pooky ~]# ps -ef | grep sshd
+root      1320     1  0 Jun22 ?        00:00:02 /usr/sbin/sshd -D
+root      6333  1320  0 10:33 ?        00:00:01 sshd: root@pts/0
+root     10044  1320  0 20:40 ?        00:00:00 sshd: root@pts/1
+root     11442  1320  6 21:02 ?        00:00:00 sshd: root@pts/2
+root     11514 11454  0 21:03 pts/2    00:00:00 grep --color=auto sshd
+[root@pooky ~]# cd /proc/1320
+[root@pooky 1320]# ll cwd
+lrwxrwxrwx. 1 root root 0 Aug 24 21:03 cwd -> /
+[root@pooky 1320]# ll fd
+total 0
+lr-x------. 1 root root 64 Jun 22 10:21 0 -> /dev/null
+lrwx------. 1 root root 64 Jun 22 10:21 1 -> socket:[21458]
+lrwx------. 1 root root 64 Jun 22 10:21 2 -> socket:[21458]
+lrwx------. 1 root root 64 Jun 22 10:21 3 -> socket:[27755]
+lrwx------. 1 root root 64 Jun 22 10:21 4 -> socket:[27757]
+```
+
+标准输出指向了 socket。
