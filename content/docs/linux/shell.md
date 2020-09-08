@@ -137,7 +137,7 @@ exit
 
 位置变量：
 
-- `$1` `$2` ... `$n` 分别表示第一个参数，第二个，到第 n 个参数。注意**第十个参数**，要用`${10}`，否则 `$` 会默认和 `1` 结合。
+- `$1` `$2` ... `$n` 分别表示第一个参数，第二个，到第 n 个参数。注意**第十个参数，要用 `${10}`**，否则 `$` 会默认和 `1` 结合。
 
 `test.sh`：
 
@@ -278,7 +278,7 @@ $var1
 - `test` 命令检查文件或者比较值。测试语句可以简化为 `[]`。`[]` 的扩展写法 `[[]]` 支持 `&&` `||` `<` `>`。`test <表达式>` 简化为 `[ 表达式 ]`。常用的测试：
   - 字符串测试 `[ str1 = str2 ]` `[ str1 != str2 ]` `[ -z str ]` `-z` 表示字符串长度是否为 0
   - 整数测试 `[ int1 -eq int2 ]` `-eq` 表示等于，`-ge` 大于等于，`gt` 大于，`le` 小于等于，`lt` 小于，`-ne` 不等于。**`[]` 做整数判断时，只能使用 `-eq` 这种形式。想要使用逻辑运算符 `<` 等，要使用 `[[]]`**。
-  - 文件测试，`[ -e file]` `-e` 文件是否存在，`-d` 文件存在并且是目录，`-f` 文件存在并且是普通文件，`-b` 文件存在并且是块文件，`-c` 文件存在并且是字符设备文件。
+  - 文件测试，`[ -e file]` `-e` 文件是否存在，`-d` 文件存在并且是目录，`-f` 文件存在并且是普通文件，`-b` 文件存在并且是块文件，`-c` 文件存在并且是字符设备文件，`-x` 文件存在并且可执行。
 
 ```bash
 [root@pooky ~]# test -f /etc/passwd
@@ -377,4 +377,184 @@ fi
 
 ### 分支
 
-`case` 和 `select` 可以构成分支语句。
+```bash
+case "$变量" in
+    "var1" )
+      echo "var1" ;;
+    "var2" )
+      echo "var2" ;;
+    "var3"|"var4" )
+      echo "var3|var4" ;;
+    * ) # 匹配其他情况
+      echo "*" ;;
+esac
+```
+
+## 循环
+
+### for
+
+- `for 参数 in 列表`
+- `do` 执行对应的命令
+- `done` 封闭一个循环
+
+使用 `{}` 得到列表：
+
+```bash
+for i in {1..9}
+do
+  echo $i
+done
+
+# or
+for i in {1..9}; do echo $i; done
+
+# or
+for loop in 1 2 3 4 5
+do
+    echo "The value is: $loop"
+done
+```
+
+使用命令得到列表，如把当前目录后缀为 txt 的文件改为后缀为 text：
+
+```bash
+for filename in `ls *.txt`
+do
+  mv $filename $(basename $filename .txt).text
+done
+```
+
+`basename` 命令可以得到文件名，不包含后缀名。
+
+C 风格的 for 循环：
+
+```bash
+for((i = 1; i <= 5; i++))  
+do  
+    echo "$i"  
+done  
+```
+
+### while
+
+- `while test测试是否成了`
+- `do` 执行对应的命令
+- `done`
+
+```bash
+int=1
+while (( $int<=5 ))
+do
+  echo $int
+  let "int++"
+done
+
+# or
+a=50
+while [ "$a" -le 100 ]
+do
+  echo $a
+  ((a++))
+done
+
+# 死循环
+while :
+do
+  echo "."
+done  
+```
+
+### until
+
+和 while 相反，循环条件为 false 时执行，为 true 时停止。
+
+```bash
+a=0
+until [ ! $a -lt 10 ]
+do
+   echo $a
+   a=`expr $a + 1`
+done
+```
+
+### 嵌套循环
+
+`break` 和 `continue` 语句：
+
+```bash
+for filename in /etc/profile.d/*.sh
+do
+  echo $filename
+  if [ -x $filename ]; then
+    . $filename
+  fi
+done
+
+
+# or
+for num in {1..9}
+do
+  if [ $num -eq 5 ]; then
+    break # 退出循环
+    # continue 跳过当前循环
+    echo $num
+  fi
+done  
+```
+
+### 使用循环处理命令行参数
+
+- 命令行参数可以使用 `$1` `$2` .. `$n` 来获取。
+- `$0` 表示当前脚本名称
+- `$*` 和 `$@` 代表所有位置参数。只有在双引号中体现出来。假设在脚本运行时写了三个参数 1、2、3，，则 " * " 等价于 "1 2 3"（传递了一个参数），而 "@" 等价于 "1" "2" "3"（传递了三个参数）。
+- `$#` 传递到脚本的参数个数
+
+```bash
+for pos in $*
+do
+  if [ $pos = help ];then
+  fi
+done
+
+# or
+while [ $# -ge 1 ];
+do
+  echo $#
+  echo "do something"
+  shift # 删除第一个参数
+done
+```
+
+## 函数
+
+定义函数：
+
+```bash
+function funcname() {
+  echo "do something"
+  echo $1
+  echo $2
+  echo ${10}
+  return 0
+}
+```
+
+执行函数：`funcname`。
+函数作用范围的变量：`local 变量名`
+函数的参数：`$1` `$2` .. `$n`
+返回值：return 返回，如果不加，将以最后一条命令运行结果，作为返回值。 return 后跟数值 n `(0-255)`
+
+### 函数库
+
+系统函数库：`/etc/init.d/functions`
+
+导入系统函数库，执行函数 `echo_success`：
+
+```bash
+[root@pooky init.d]# source /etc/init.d/functions
+[root@pooky init.d]# echo_success
+[root@pooky init.d]#                                       [  OK  ]
+```
+
+自定义函数库：使用 `source` 导入脚本中的函数
