@@ -54,7 +54,7 @@ user --groups=wheel --name=admin --passwd=$6$Lh0jvsS/YklFVYDM$WjPFI.WaMd3be/qiyF
 # System bootloader configuration
 # Partition clearing information
 # Disk partitioning information
-[root@pooky ~]# grep # *.sh   # 当前目录中，查找后缀有 .sh 文件中包含 # 字符串的行
+[root@pooky ~]# grep '#' *.sh   # 当前目录中，查找后缀有 .sh 文件中包含 # 字符串的行
 Usage: grep [OPTION]... PATTERN [FILE]...
 Try 'grep --help' for more information.
 
@@ -300,7 +300,7 @@ awk 和 sed 的区别：
 awk 的流程控制：
 
 - 输入数据前例程 `BEGIN{}`，读入数据前执行，做一些预处理操作。
-- 主输入循环 `{}`，读取每一行的处理动作。
+- 主输入循环 `{}`，处理读取的每一行。
 - 所有文件读取完成例程 `END{}`，读取操作完成后执行，做一些数据汇总。
 
 常用的写法是只写主输入循环。
@@ -538,3 +538,140 @@ user1 60 61 62 63 64 65
 ```
 
 数组：
+
+- `数组[下标] = 值`，初始化数组。下标可以是数字，也可以是字符串。
+- `for (变量 in 数组)`，`数组[变量]` 获取数组元素
+- `delete 数组[下标]` 删除数组元素
+
+```bash
+[root@SGDLITVM0905 ~]# cat score.txt
+user1 60 61 62 63 64 65
+user2 70 71 72 73 74 75
+user3 80 81 82 83 84 85
+user4 90 91 92 93 94 95
+[root@SGDLITVM0905 ~]# awk '{ sum=0; for(column=2;column<=NF;column++) sum+=$column; print sum }' score.txt # 计算每个人的总分
+375
+435
+495
+555
+[root@SGDLITVM0905 ~]# [root@SGDLITVM0905 ~]# awk '{ sum=0; for(column=2;column<=NF;column++) sum+=$column; avg[$1]=sum/(NF-1); }END{ for( user in avg) print user, avg[user]}' score.txt  # 计算每个人的平均分 并在 END 例程中格式化输出
+user1 62.5
+user2 72.5
+user3 82.5
+user4 92.5
+
+```
+
+awk 脚本可以保存到文件：
+
+```bash
+[root@SGDLITVM0905 ~]# awk -f avg.awk score.txt
+user1 62.5
+user2 72.5
+user3 82.5
+user4 92.5
+
+```
+
+- `-f` 加载 awk 文件
+- `avg.awk` 文件的内容：`{ sum=0; for(column=2;column<=NF;column++) sum+=$column; avg[$1]=sum/(NF-1); }END{ for( user in avg) print user, avg[user]}`。
+
+命令行参数数组：
+
+- `ARGC` 命令行参数数组的长度
+- `ARGV` 命令行参数数组
+
+```bash
+[root@SGDLITVM0905 ~]# cat arg.awk
+BEGIN{
+  for(x=0;x<ARGC;x++)
+    print ARGV[x]
+  print ARGC
+}
+[root@SGDLITVM0905 ~]# awk -f arg.awk
+awk
+1
+[root@SGDLITVM0905 ~]# awk -f arg.awk 11 22 33
+awk
+11
+22
+33
+4
+```
+
+`ARGV[0]` 就是命令本身。
+
+```bash
+[root@SGDLITVM0905 ~]# cat avg.awk
+{
+  sum = 0
+  for ( c = 2; c <= NF; c++ )
+    sum += $c
+
+  avg[$1] = sum / ( NF-1 )
+  print $1, avg[$1]
+  
+}
+END{
+  for ( usr in avg)
+    sum_all += avg[user]
+
+  avg_all = sum_all / NR
+  
+  for ( user in avg )
+    if ( avg[user] > avg_all )
+      above++
+    else
+      below++
+
+  print "above", above
+  print "below", below
+  
+}
+[root@SGDLITVM0905 ~]# awk -f avg.awk score.txt
+user1 62.5
+user2 72.5
+user3 82.5
+user4 92.5
+above 4
+below 1
+```
+
+awk 函数：
+
+- 算数函数
+  - `sin()` `cos()` `int()` `rand()` `srand()`
+- 字符串函数
+  - `toupper(s)` `tolower(s)` `length(s)` `split(s,a,sep)` `match(s,r)` `substr(s,p,n)`
+- 自定义函数，自定义函数一定要写在 `BEGIN` 主循环 `END` 例程的外面
+
+```bash
+function 函数名 ( 参数 ) {
+  awk 语句
+  return awk 变量
+}
+```
+
+示例：
+
+```bash
+[root@SGDLITVM0905 ~]# awk 'BEGIN{pi=3.14; print int(pi)}'
+3
+[root@SGDLITVM0905 ~]# awk 'BEGIN{print rand()}'   # 这是一个伪随机数
+0.237788
+[root@SGDLITVM0905 ~]# awk 'BEGIN{print rand()}'
+0.237788
+[root@SGDLITVM0905 ~]# awk 'BEGIN{print rand()}'
+0.237788
+[root@SGDLITVM0905 ~]# awk 'BEGIN{srand();print rand()}'   # srand 会重新获取种子。范围是 0 ~ 1
+0.960391
+[root@SGDLITVM0905 ~]# awk 'BEGIN{srand();print rand()}'
+0.0422737
+[root@SGDLITVM0905 ~]# awk 'BEGIN{srand();print rand()}'
+0.555768
+[root@SGDLITVM0905 ~]# awk 'function a() { return 0 } BEGIN{ print a()}'
+0
+[root@SGDLITVM0905 ~]# awk 'function double(str) { return str str } BEGIN{ print double("hello")}'
+hellohello
+
+```
