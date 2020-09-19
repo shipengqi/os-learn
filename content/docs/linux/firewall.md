@@ -243,8 +243,99 @@ iptables 和 firewalld 同时运行会产生冲突。应该关闭其中一个。
 
 ```bash
 # 查看状态
-firewall-cmd --state
+[root@shcCentOS72VM07 ~]# firewall-cmd --state
 
 # 重新加载配置
-firewall-cmd --reload
+[root@shcCentOS72VM07 ~]# firewall-cmd --reload
+
+# 查看具体信息
+[root@shcCentOS72VM07 ~]# firewall-cmd --list-all
+public (active)                 # public 就是一个区域 zone
+  target: default
+  icmp-block-inversion: no
+  interfaces: eth0
+  sources: 10.0.0.1 10.0.0.1/24
+  services: ssh dhcpv6-client
+  ports: 80/tcp 23/tcp
+  protocols:
+  masquerade: no
+  forward-ports:
+  sources-ports:
+  icmp-blocks:
+  rich rules:
+[root@shcCentOS72VM07 ~]#  
 ```
+
+上面的示例，就表示 public zone 绑定了 eth0 网口，source IP 为 `10.0.0.1` `10.0.0.1/24` 的可以访问端口 80，和 23，还可以访问 ssh 和 dhcpv6-client 服务。
+
+```bash
+[root@shcCentOS72VM07 ~]# firewall-cmd --zone=public --list-interfaces
+eth0
+[root@shcCentOS72VM07 ~]# firewall-cmd --list-ports
+80/tcp 23/tcp
+[root@shcCentOS72VM07 ~]# firewall-cmd --list-services
+ssh dhcpv6-client
+```
+
+上面的示例是单独查看某一项配置，`--zone=public` 可以省略，public 是默认的。
+
+```bash
+[root@shcCentOS72VM07 ~]# firewall-cmd --get-zones  # 查看
+block dmz drop external home internal public trusted work
+[root@shcCentOS72VM07 ~]# firewall-cmd --get-default-zone  # 查看默认使用的 zone
+public
+[root@shcCentOS72VM07 ~]# firewall-cmd --get-active-zones  # 查看激活的 zone
+public
+  interfaces: eth0
+  sources: 10.0.0.1 10.0.0.1/24
+[root@shcCentOS72VM07 ~]# firewall-cmd --get-default-zone  # 查看默认使用的 zone
+public
+```
+
+### 添加规则
+
+```bash
+[root@shcCentOS72VM07 ~]# firewall-cmd --add-services=https  # 添加服务
+success  
+```
+
+上面的示例中添加了一个 https 服务，但是这种规则是临时的，如果系统重启，或者执行 `firewall-cmd --reload` 之后就会消失，如果想要持久保存，使用 `--permanent` 参数。
+
+```bash
+firewall-cmd --zone=public --add-service=https --permanent
+# reload 命令会删除所有运行时配置并应用永久配置。因为 firewalld 动态管理规则集，所以它不会破坏现有的连接和会话
+firewall-cmd --reload
+
+# 也可以同时添加到临时和持久规则集
+firewall-cmd --zone=public --add-service=https --permanent  # 添加到持久规则集，会在 reload 之后生效
+firewall-cmd --zone=public --add-service=https              # 临时规则集，会立即生效
+```
+
+```bash
+# 查看默认的可用服务
+firewall-cmd --get-services
+
+# 要启用或禁用 HTTP 服务： 
+firewall-cmd --zone=public --add-service=http --permanent
+firewall-cmd --zone=public --remove-service=http --permanent
+
+# 允许或者禁用 12345 端口的 TCP 流量。
+firewall-cmd --zone=public --add-port=12345/tcp --permanent
+firewall-cmd --zone=public --remove-port=12345/tcp --permanent
+
+# 在同一台服务器上将 80 端口的流量转发到 12345 端口
+firewall-cmd --zone="public" --add-forward-port=port=80:proto=tcp:toport=12345
+
+# 不同服务器端口转发，要先开启 masquerade
+firewall-cmd --zone=public --add-masquerade
+# 将 IP 地址为 ：123.456.78.9 的远程服务器上 80 端口的流量转发到 8080 上
+firewall-cmd --zone="public" --add-forward-port=port=80:proto=tcp:toport=8080:toaddr=123.456.78.9
+
+# 删除规则 --remove 替换 --add
+# firewall-cmd --zone=public --remove-masquerade
+```
+
+### 配置文件
+
+- `/usr/lib/FirewallD` 下保存默认配置，如默认区域和公用服务。避免修改它们，因为每次 firewall 软件包更新时都会覆盖这些文件。
+- `/etc/firewalld` 下保存系统配置文件。 这些文件将覆盖默认配置。
