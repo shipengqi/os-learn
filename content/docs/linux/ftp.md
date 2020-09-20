@@ -98,6 +98,18 @@ local_enable=YES
 
 # 本地用户是否可以写入
 write_enable=YES
+
+# 设置 FTP 服务器建立连接所监听的端口，默认值为 21
+listen_port=21
+
+# 指定 FTP 使用 20 端口进行数据传输，默认值为 YES
+connect_from_port_20=YES
+
+# 是否启用 vsftpd.user_list 文件
+userlist_enable=YES
+
+# 决定 vsftpd.user_list 文件中的用户是否能够访问 FTP 服务器。若设置为 YES，则 vsftpd.user_list 文件中的用户不允许访问 FTP，若设置为 NO，则只有 vsftpd.user_list 文件中的用户才能访问 FTP。
+userlist_deny=YES
 ```
 
 上面的配置中 `local_enable`，如果 selinux 为 `enforcing` 需要检查 `ftp_home_dir` 是否为 `on`。
@@ -124,21 +136,38 @@ ftpd_use_nfs --> on
 ftpd_use_passive_mode --> off
 ```
 
+修改后使用 `systemctl reload vsftpd` 使配置生效。
+
+登录另一台机器，使用 ftp 上传文件：
+
 ```bash
-[root@SGDLITVM0905 ~]# ftp localhost
-Connected to localhost (127.0.0.1).
+[root@SGDLITVM0906 ~]# ftp 16.187.191.150     # 连接 vsftpd
+Connected to 16.187.191.150 (16.187.191.150).
 220 (vsFTPd 3.0.2)
-Name (localhost:root): user1
+Name (16.187.191.150:root): user1
 331 Please specify the password.
 Password:
 230 Login successful.
 Remote system type is UNIX.
 Using binary mode to transfer files.
-ftp> ls
-227 Entering Passive Mode (127,0,0,1,29,16).
+ftp> ls                               # 查看 user1 的 home 目录
+227 Entering Passive Mode (16,187,191,150,84,31).
 150 Here comes the directory listing.
 226 Directory send OK.
-
+ftp> !ls                              # 查看当前主机的本地目录
+anaconda-ks.cfg  original-ks.cfg  upload.txt  workspace  workspace2
+ftp> put upload.txt                   # 使用 put 命令上传文件
+local: upload.txt remote: upload.txt
+227 Entering Passive Mode (16,187,191,150,100,251).
+150 Ok to send data.
+226 Transfer complete.
+ftp> get <file>                       # 使用 get 下载文件
 ```
 
-`systemctl reload vsftpd`
+## 虚拟用户
+
+- `guest_enable=YES`
+- `guest_username=vuser`
+- `user_config_dir=/etc/vsftpd/vuserconfig`
+- `allow_writeable_chroot=YES`
+- `pam_service_name=vsftpd.vuser`
