@@ -9,3 +9,46 @@
 ## 进程
 
 程序本身没有生命周期，它只是存储在磁盘上的一些指令或数据。**进程就是运行中的程序**。
+
+#### fork
+
+系统调用 fork 创建新进程，但是这个接口非常奇怪。
+
+```c
+printf("hello world (pid:%d)\n", (int) getpid());
+int rc = fork();
+if (rc < 0) {
+    fprintf(stderr, "fork failed\n");
+    exit(1);
+} else if (rc == 0) {
+    printf("hello, I am child (pid:%d)\n", (int) getpid());
+} else {
+    printf("hello. I am parent of %d (pid:%d)\n", rc, (int) getpid());
+}
+```
+
+输出：
+
+```bash
+hello world (pid:29146)
+hello. I am parent of 29147 (pid:29146)
+hello, I am child (pid:29147)
+```
+
+第一行输出的是当前进程 PID。然后使用 fork 创建了新的进程（子进程），新的进程几乎与调用进程（父进程）完全一样，在操作系统看来有两个完全一样的程序在运行，并都从 fork 系统调用中返回。子进程不会从 main 函数开始执行（hello world 只输出了一次），而是从 fork 返回，好像是它自己调用了 fork。
+
+子进程并不是完全拷贝了父进程，子进程拥有独立的地址空间，寄存器等，但是它从 fork 返回的值是不同的。**子进程得到的返回值是 0，父进程得到的返回值是子进程的 PID**。
+
+如果在单个 CPU 的系统上运行，父子这两个进程的运行顺序是不确定的。
+
+#### wait
+
+wait 会等待子进程运行
+
+#### exec
+
+exec 系统调用也是创建进程，不过它可以运行与父进程不同的程序。exec 指定可执行程序和参数，exec 会从可执行程序中加载代码和静态数据，并用它复写自己的代码段，堆、栈及其他内存空间都会被重新初始化。然后操作系统执行该程序，传入参数。因此它并没有创建新的进程，而是直接将当前运行的程序换位不同的运行程序。
+
+#### fork 和 exec
+
+fork 和 exec 这中设计，使 shell 在 fork 之后和 exec 之前可以执行代码的机会，可以在运行新程序前改变环境。
