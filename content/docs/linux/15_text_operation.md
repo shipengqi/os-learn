@@ -1,4 +1,4 @@
-# 文本搜索
+# 文本操作
 
 文本搜索一般会使用正则表达式。
 
@@ -25,6 +25,8 @@ grep 用来查找文件里符合条件的字符串。 grep 会把符合条件的
 
 ```bash
 [root@pooky init.d]# grep password /root/anaconda-ks.cfg
+# Root password
+[root@pooky init.d]# grep -i password /root/anaconda-ks.cfg  -i 忽略大小写
 # Root password
 [root@pooky ~]# grep pass.... /root/anaconda-ks.cfg  # 可以使用元字符 . 匹配任意一个字符
 auth --enableshadow --passalgo=sha512
