@@ -1,15 +1,15 @@
 # 包管理器
 
-- rpm,yum CentOS 和 RedHat 使用 yum 包管理器，安装包的格式为 rpm。
-- apt Ubuntu 和 Debian 使用 apt 包管理器，安装包的格式为 deb
+- `rpm`，`yum`：CentOS 和 RedHat 使用 `yum` 包管理器，安装包的格式为 `rpm`。
+- `apt`：Ubuntu 和 Debian 使用 `apt` 包管理器，安装包的格式为 deb
 
 ## rpm 包格式
 
 `bind-9.8.2-0.47.rc1.el6.x86_64.rpm`：
 
-1. 软件名，如 bind
-2. 软件版本，`9.8.2-0` 是软件版本，版本号格式通常为 “主版本号.次版本号.修正号”。47 是发布版本号，表示这个 rpm 软件包是第几次编译生成的
-3. 系统版本，如 el6，表示支持的系统版本是 CentOS 6，el7 就是支持的系统版本是 CentOS 7。
+1. 软件名，如 `bind`
+2. 软件版本，`9.8.2-0` 是软件版本，版本号格式通常为 `主版本号.次版本号.修正号`。`47` 是发布版本号，表示这个 `rpm` 软件包是第几次编译生成的
+3. 系统版本，如 `el6`，表示支持的系统版本是 CentOS 6，`el7` 就是支持的系统版本是 CentOS 7。
 4. 平台，如 `x86_64`
 5. 特殊名称：
 
@@ -81,7 +81,7 @@ gpgkey=http://mirrors.aliyun.com/centos/RPM-GPG-KEY-CentOS-7
 
 ### yum 命令
 
-- install 安装
-- remove 卸载
-- list|grouplist 查看
-- update 更新
+- `install` 安装
+- `remove` 卸载
+- `list|grouplist` 查看
+- `update` 更新

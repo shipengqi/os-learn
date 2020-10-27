@@ -1,17 +1,17 @@
 # 网络管理
 
-`net-tools` 是 CentOS 7 之前的版本使用的网络管理工具，而 iproute2 是 CentOS 7 之后主推的网络管理工具。
+`net-tools` 是 CentOS 7 之前的版本使用的网络管理工具，而 `iproute2` 是 CentOS 7 之后主推的网络管理工具。
 
 ## net-tools
 
-- ifconfig 网卡配置
-- route 网关配置
-- netstat
+- `ifconfig` 网卡配置
+- `route` 网关配置
+- `netstat`
 
 ## iproute2
 
-- ip
-- ss
+- `ip`
+- `ss`
 
 ## 使用网络工具
 
@@ -37,7 +37,7 @@ CentOS 使用一致性网络设备命名。
 
 1. 编辑 `/etc/default/grup` 文件，在 `GRUP_CMDLINE_LINUX` 对应的命令后面添加（或修改）参数 `biosdevname=0 net.ifnames=0`，就可以传递到内核。
 2. `/etc/default/grup` 需要运行 `grup2-mkconfig -o /boot/grup2/grup.cfg` 才会更新 grup，被内核读取。
-3. reboot
+3. `reboot`
 
 规则：
 
@@ -71,33 +71,33 @@ CentOS 使用一致性网络设备命名。
 ### 使用 ip 命令
 
 - `ip addr ls` 相当于 `ifconfig`
-- `ip link set dev eth0 up ls` 相当于 `ifup eth0`
+- `ip link set dev eth0 up` 相当于 `ifup eth0`
 - `ip addr add 10.0.0.1/24 dev eth1` 相当于 `ifconfig eth1 netmask 255.255.255.0`
 - `ip route add 10.0.0.1/24 via 192.168.0.1` 相当于 `route add -net 10.0.0.0 netmask 255.255.255.0 gw 192.168.0.1`。
 
 ## 网络故障排查
 
-- ping
-- traceroute
-- mtr
-- nslookup
-- telnet
-- tcpdump
-- netstat
-- ss
+- `ping`
+- `traceroute`
+- `mtr`
+- `nslookup`
+- `telnet`
+- `tcpdump`
+- `netstat`
+- `ss`
 
 ### 如何查看到目标主机的网络状态
 
 1. 使用 `ping <IP 或者 域名>` 查看网络是否是通的。
-2. `traceroure` 和 `mtr` 辅助 `ping` 命令，在 `ping` 通网络之后，如果网络通信还是有问题，可以使用 `traceroure` 可以查看网络中每一跳的网络质量。`mtr` 可以检测网络中是否有丢包。
+2. `traceroute` 和 `mtr` 辅助 `ping` 命令，在 `ping` 通网络之后，如果网络通信还是有问题，可以使用 `traceroute` 可以查看网络中每一跳的网络质量。`mtr` 可以检测网络中是否有丢包。
 3. `nslookup` 查看域名对应的 IP。
 4. 如果主机可以连接，但是服务仍然无法访问，使用 `telnet` 检查端口状态。
 5. 如果端口没有问题，仍然无法访问，可以使用 `tcpdump` 进行抓包，更细致的查看网络问题。
 6. 使用 `netstat` 和 `ss`，查看服务范围。
 
-### tracetoute
+### traceroute
 
-- `tracetoute -w 1 www.baidu.com`，`-w 1` wait，表示某个 IP 超时的最大等待时间为 1 秒。
+- `traceroute -w 1 www.baidu.com`，`-w 1` wait，表示某个 IP 超时的最大等待时间为 1 秒。
   - `-n` 显示 IP 地址
   - `-m` 设置检测数据包的最大存活数值 TTL 的大小
   - `-q` 每个网关发送数据包个数
@@ -215,6 +215,8 @@ listening on virbr0, link-type EN10MB (Ethernet), capture size 262144 bytes
 
 ### netstat
 
+查看 Linux 中网络系统状态信息。
+
 ```bash
 [root@shcCDFrh75vm8 ~]# netstat -ntp
 Active Internet connections (w/o servers)
@@ -261,7 +263,7 @@ tcp6       0      0 ::1:6011                :::*                    LISTEN      
 
 ### ss
 
-属于 iproute2 工具包，类似 netstat，参数类似，显示格式不同。
+属于 iproute2 工具包，类似 `netstat`，参数类似，显示格式不同。
 
 ```bash
 [root@shcCDFrh75vm8 ~]# ss -ntpl

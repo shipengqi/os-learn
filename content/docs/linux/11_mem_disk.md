@@ -4,8 +4,8 @@
 
 ### 查看内存的使用率
 
-- free
-- top
+- `free`
+- `top`
 
 ```bash
 [root@pooky ~]# free
@@ -31,9 +31,9 @@ Swap:             0           0           0
 
 ### 查看磁盘的使用率
 
-- fdisk 查看磁盘，磁盘分区。（`parted -l` 和 `fdisk -l` 类似）
-- df
-- du
+- `fdisk` 查看磁盘，磁盘分区。（`parted -l` 和 `fdisk -l` 类似）
+- `df`
+- `du`
 
 #### fdisk
 
@@ -108,7 +108,7 @@ brw-rw----. 1 root disk 8, 3 Jun 22 10:20 /dev/sda3
 
 #### df 和 du
 
-df 可以看做是 fdisk 的补充。fdisk 无法看到分区挂载到了那个目录下。
+`df` 可以看做是 `fdisk` 的补充。`fdisk` 无法看到分区挂载到了那个目录下。
 
 ```bash
 [root@pooky ~]# df -h
@@ -177,16 +177,16 @@ inode 和 datablock 的结构是链表结构。inode 是头结点。
 
 ## 文件操作
 
-- touch 创建文件 `touch <文件名>`
-- cp 复制文件 `cp <src> <target>`
-- mv 移动文件 `mv <src> <target>`，如果在同一个目录中移动，那就是重命名操作，inode 并不会改变，操作非常快。如果再同一个分区移动，也会非常快，因为文件被同一个文件系统管理，只是修改 inode
+- `touch` 创建文件 `touch <文件名>`
+- `cp` 复制文件 `cp <src> <target>`
+- `mv` 移动文件 `mv <src> <target>`，如果在同一个目录中移动，那就是重命名操作，inode 并不会改变，操作非常快。如果再同一个分区移动，也会非常快，因为文件被同一个文件系统管理，只是修改 inode
 的信息。
-- rm 删除文件，其实就是将文件名和 inode 的链接断开。这样删除会非常快，即使文件非常大。也使误删除操作，可以恢复。
-- ln 文件链接
+- `rm` 删除文件，其实就是将文件名和 inode 的链接断开。这样删除会非常快，即使文件非常大。也使误删除操作，可以恢复。
+- `ln` 文件链接
 
 ### 修改文件
 
-如果使用 vim 修改文件内容：
+如果使用 `vim` 修改文件内容：
 
 ```bash
 [root@pooky ~]# vim test1

@@ -29,9 +29,9 @@
 
 ## 修改文件权限
 
-- chmod 修改文件，目录的权限 `chmod u+x /test`，`chmod 755 /test`。
-- chown 修改所属用户，用户组 `chown user1 /test` 修改 `/test` 的所属用户为 user1，`chown :group1 /test` 修改 `/test` 的所属用户组为 group1。
-- chgrp 只修改所属用户组 `chgrp group1 /test` 修改 `/test` 的所属用户组为 group1。
+- `chmod` 修改文件，目录的权限 `chmod u+x /test`，`chmod 755 /test`。
+- `chown` 修改所属用户，用户组 `chown user1 /test` 修改 `/test` 的所属用户为 user1，`chown :group1 /test` 修改 `/test` 的所属用户组为 group1。
+- `chgrp` 只修改所属用户组 `chgrp group1 /test` 修改 `/test` 的所属用户组为 group1。
 
 ### chmod
 
