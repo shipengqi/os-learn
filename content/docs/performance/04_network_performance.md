@@ -38,6 +38,46 @@ Linux 内核中的网络栈，其实也类似于 TCP/IP 的四层结构。
 - 分片后的网络包，再送到网络接口层，进行物理地址寻址，以找到下一跳的 MAC 地址。然后添加帧头和帧尾，放到发包队列中。这一切完成后，会有**软中断**通知驱动程序：发包队列中有新的网络帧需要发送。
 - 最后，驱动程序通过 DMA ，从发包队列中读出网络帧，并通过物理网卡把它发送出去。
 
+### 网络收发过程中缓冲区的位置
+
+- 网卡收发网络包时，通过 DMA 方式交互的**环形缓冲区**；
+- 网卡中断处理程序为网络帧分配的，内核数据结构 `sk_buff` 缓冲区；
+- 应用程序通过套接字接口，与网络协议栈交互时的**套接字缓冲区**。
+
+不过相应的，就会有两个问题。
+
+首先，这些缓冲区的位置在哪儿？是在网卡硬件中，还是在内存中？
+
+这些缓冲区都处于内核管理的内存中。
+
+其中，环形缓冲区，由于需要 DMA 与网卡交互，理应属于网卡设备驱动的范围。
+
+`sk_buff` 缓冲区，是一个维护网络帧结构的双向链表，链表中的每一个元素都是一个网络帧（Packet）。虽然 TCP/IP 协议栈分了好几层，但上下不同层之间的传递，实际上只需要操作这个数据结构中的指针，而无需进行数据复制。
+
+套接字缓冲区，则允许应用程序，给每个套接字配置不同大小的接收或发送缓冲区。应用程序发送数据，实际上就是将数据写入缓冲区；而接收数据，其实就是从缓冲区中读取。至于缓冲区中数据的进一步处理，则由传输层的 TCP 或 UDP 协议来完成。
+
+其次，这些缓冲区，跟 Buffer 和 Cache 有什么关联？
+
+Buffer ，都跟块设备直接相关；而其他的都是 Cache。
+
+实际上，`sk_buff`、套接字缓冲、连接跟踪等，都通过 slab 分配器来管理。你可以直接通过 `/proc/slabinfo`，来查看它们占用的内存大小。
+
+### 内核协议栈，是通过一个内核线程的方式来运行的吗
+
+软中断处理，就有专门的内核线程 ksoftirqd。每个 CPU 都会绑定一个 ksoftirqd 内核线程，比如， 2 个 CPU 时，就会有 ksoftirqd/0 和 ksoftirqd/1 这两个内核线程。
+
+并非所有网络功能，都在软中断内核线程中处理。内核中还有很多其他机制（比如硬中断、kworker、slab 等），这些机制一起协同工作，才能保证整个网络协议栈的正常运行。
+
+### 最大连接数
+
+无论 TCP 还是 UDP，端口号都只占 16 位，也就说其最大值也只有 65535。
+
+Linux 协议栈，通过五元组来标志一个连接（即协议，源 IP、源端口、目的 IP、目的端口)。
+
+对客户端来说，每次发起 TCP 连接请求时，都需要分配一个空闲的本地端口，去连接远端的服务器。由于这个本地端口是独占的，所以客户端最多只能发起 65535 个连接。
+
+对服务器端来说，其通常监听在固定端口上（比如 80 端口），等待客户端的连接。根据五元组结构，我们知道，客户端的 IP 和端口都是可变的。如果不考虑 IP 地址分类以及资源限制，服务器端的理论最大连接数，可以达到 2 的 48 次方（IP 为 32 位，端口号为 16 位），远大于 65535。
+
 ## 性能指标
 
 - 带宽，表示链路的最大传输速率，单位通常为 `b/s` （`比特/秒`）。常用的带宽有 1000M、10G、40G、100G 等。
@@ -109,7 +149,7 @@ rdlist
         当执行epoll_ctl时除了把socket描述符放入到红黑树中之外，还会给内核中断处理程序注册一个回调函数，告诉内核，当这个描述符上有事件到达（或者说中断了）的时候就调用这个回调函数。这个回调函数的作用就是将描述符放入到rdlist中，所以当一个socket上的数据到达的时候内核就会把网卡上的数据复制到内核，然后把socket描述符插入就绪链表rdlist中。
 
 node.js 底层
-io分为网络IO和磁盘IO，对于网络IO，使用epoll之类的就可以了。但是对于瓷盘IO，没有完美的办法，所以都是使用多线程阻塞模拟的，不同在于Windows下的IOCP是在系统内核里提供的线程池，而Linux之类的在用户层提供的线程池。libeio和libev是node较早版本使用的，在libuv提供之后，这两个库均不在使用。
+IO 分为网络 IO 和磁盘 IO，对于网络 IO，使用 epoll 之类的就可以了。但是对于磁盘 IO，没有完美的办法，所以都是使用多线程阻塞模拟的，不同在于 Windows 下的 IOCP 是在系统内核里提供的线程池，而 Linux 之类的在用户层提供的线程池。libeio 和 libev 是 node 较早版本使用的，在 libuv 提供之后，这两个库均不在使用。
 
 ### C1000K
 
@@ -132,3 +172,101 @@ C1000K 的解决方法，本质上还是构建在 epoll 的非阻塞 IO 模型�
 DPDK 是目前最主流的高性能网络方案，不过，这需要能支持 DPDK 的网卡配合使用。
 
 在大多数场景中，我们并不需要单机并发 1000 万请求。通过调整系统架构，把请求分发到多台服务器中并行处理，才是更简单、扩展性更好的方案。
+
+### DNS 解析分析
+
+DNS 服务器的配置：
+
+```bash
+[root@SGDLITVM0905 ~]# cat /etc/resolv.conf
+nameserver 16.187.185.201
+```
+
+nslookup 命令，可以查询到这个域名的 A 记录：
+
+```bash
+[root@SGDLITVM0905 ~]# nslookup www.baidu.com
+Server:  16.187.185.201
+Address: 16.187.185.201#53
+
+Non-authoritative answer:
+www.baidu.com canonical name = www.a.shifen.com.
+www.a.shifen.com canonical name = www.wshifen.com.
+Name: www.wshifen.com
+Address: 104.193.88.77
+Name: www.wshifen.com
+Address: 104.193.88.123
+```
+
+另外一个常用的 DNS 解析工具 dig ，提供了 trace 功能，可以展示递归查询的整个过程：
+
+```bash
+# +trace 表示开启跟踪查询
+# +nodnssec 表示禁止 DNS 安全扩展
+$ dig +trace +nodnssec time.geekbang.org
+
+; <<>> DiG 9.11.3-1ubuntu1.3-Ubuntu <<>> +trace +nodnssec time.geekbang.org
+;; global options: +cmd
+.   322086 IN NS m.root-servers.net.
+.   322086 IN NS a.root-servers.net.
+.   322086 IN NS i.root-servers.net.
+.   322086 IN NS d.root-servers.net.
+.   322086 IN NS g.root-servers.net.
+.   322086 IN NS l.root-servers.net.
+.   322086 IN NS c.root-servers.net.
+.   322086 IN NS b.root-servers.net.
+.   322086 IN NS h.root-servers.net.
+.   322086 IN NS e.root-servers.net.
+.   322086 IN NS k.root-servers.net.
+.   322086 IN NS j.root-servers.net.
+.   322086 IN NS f.root-servers.net.
+;; Received 239 bytes from 114.114.114.114#53(114.114.114.114) in 1340 ms
+
+org.   172800 IN NS a0.org.afilias-nst.info.
+org.   172800 IN NS a2.org.afilias-nst.info.
+org.   172800 IN NS b0.org.afilias-nst.org.
+org.   172800 IN NS b2.org.afilias-nst.org.
+org.   172800 IN NS c0.org.afilias-nst.info.
+org.   172800 IN NS d0.org.afilias-nst.org.
+;; Received 448 bytes from 198.97.190.53#53(h.root-servers.net) in 708 ms
+
+geekbang.org.  86400 IN NS dns9.hichina.com.
+geekbang.org.  86400 IN NS dns10.hichina.com.
+;; Received 96 bytes from 199.19.54.1#53(b0.org.afilias-nst.org) in 1833 ms
+
+time.geekbang.org. 600 IN A 39.106.233.176
+;; Received 62 bytes from 140.205.41.16#53(dns10.hichina.com) in 4 ms
+```
+
+第一部分，是从 `114.114.114.114` 查到的一些根域名服务器（`.`）的 NS 记录。
+
+第二部分，是从 NS 记录结果中选一个（`h.root-servers.net`），并查询顶级域名 `org.` 的 NS 记录。
+
+第三部分，是从 `org.` 的 NS 记录中选择一个（`b0.org.afilias-nst.org`），并查询二级域名 `geekbang.org.` 的 NS 服务器。
+
+最后一部分，就是从 `geekbang.org.` 的 NS 服务器（`dns10.hichina.com`）查询最终主机 `time.geekbang.org.` 的 A 记录。
+
+#### DNS 解析慢
+
+dnsmasq 是最常用的 DNS 缓存服务之一，还经常作为 DHCP 服务来使用。性能也可以满足绝大多数应用程序对 DNS 缓存的需求。
+
+### tcpdump 和 wireshark
+
+tcpdump 和 Wireshark 就是最常用的网络抓包和分析工具
+
+- tcpdump 仅支持命令行格式使用，常用在服务器中抓取和分析网络包。
+- Wireshark 除了可以抓包外，还提供了强大的图形界面和汇总分析工具，简单实用。
+
+### DDoS
+
+DDoS 的前身是 DoS（Denail of Service），即拒绝服务攻击，指利用大量的合理请求，来占用过多的目标资源，从而使目标服务无法响应正常请求。
+
+DDoS（Distributed Denial of Service） 则是在 DoS 的基础上，采用了分布式架构，利用多台主机同时攻击目标主机。这样，即使目标服务部署了网络防御设备，面对大量网络请求时，还是无力应对。
+
+DDoS 可以分为下面几种类型。
+
+第一种，耗尽带宽。无论是服务器还是路由器、交换机等网络设备，带宽都有固定的上限。带宽耗尽后，就会发生网络拥堵，从而无法传输其他正常的网络报文。
+
+第二种，耗尽操作系统的资源。网络服务的正常运行，都需要一定的系统资源，像是 CPU、内存等物理资源，以及连接表等软件资源。一旦资源耗尽，系统就不能处理其他正常的网络连接。
+
+第三种，消耗应用程序的运行资源。应用程序的运行，通常还需要跟其他的资源或系统交互。如果应用程序一直忙于处理无效请求，也会导致正常请求的处理变慢，甚至得不到响应。
