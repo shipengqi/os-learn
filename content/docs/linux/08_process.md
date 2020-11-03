@@ -12,7 +12,7 @@
 
 ### ps
 
-执行 `ps` 查看当前终端的可以看到的进程：
+执行 `ps` 查看当前终端的可以看到的进程，p 代表 processes，也就是进程；s 代表 snapshot，也就是快照：
 
 ```bash
 [root@pooky ~]# ps
@@ -50,7 +50,7 @@
 ```
 
 - `ps -A` 和 `ps -e` 一样
-- `ps -ef` 显示所有进程，包含命令信息
+- `ps -ef` 显示所有进程，包含命令信息，`-f` 包含更多描述字段
 - `ps -eLf` 显示线程
 - `ps -au` 显示详细的信息
 - `ps -aux` 显示所有用户的进程
@@ -151,7 +151,7 @@ systemd─┬─ModemManager───2*[{ModemManager}]
 
 ### top
 
-`top` 显示进程和系统信息。
+`top` 显示进程和系统信息。其实和 `ps` 差不多，只不过显示的是实时数据。
 
 ```bash
 [root@pooky ~]# top
