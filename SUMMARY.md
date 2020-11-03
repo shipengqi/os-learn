@@ -4,6 +4,7 @@
 - :clock130: 极客时间 趣谈 Linux 操作系统
 - :negative_squared_cross_mark: 极客时间 Linux 性能优化
 - :negative_squared_cross_mark: 拉钩 重学操作系统
+- :negative_squared_cross_mark: 极客时间性能工程高手课
 - :clock130: 操作系统导论
 - :clock130: 计算机科学导论
 - :clock130: 深入理解计算机系统
