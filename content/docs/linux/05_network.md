@@ -409,3 +409,107 @@ hostnamectl set-hostname pooky75vm8.lab.net
 有些服务是依赖主机名的，修改主机名会影响这些服务。需要修改 host 文件 `/etc/hosts`，添加一行映射：`127.0.0.1 pooky75vm8.lab.net`。
 
 否则某些服务启动时，可能会卡住。
+
+## Linux 路由表
+指记录路由信息的表(可以单路由表，也可以多路由表)。
+
+```bash
+[root@shcCDFrh75vm7 container]# route
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+default         gateway         0.0.0.0         UG    100    0        0 ens32
+16.155.192.0    0.0.0.0         255.255.248.0   U     100    0        0 ens32
+192.168.99.0    0.0.0.0         255.255.255.0   U     0      0        0 testbridge
+192.168.122.0   0.0.0.0         255.255.255.0   U     0      0        0 virbr0
+[root@shcCDFrh75vm7 container]# route -n # 查看默认路由表
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         16.155.192.1    0.0.0.0         UG    100    0        0 ens32
+16.155.192.0    0.0.0.0         255.255.248.0   U     100    0        0 ens32
+192.168.99.0    0.0.0.0         255.255.255.0   U     0      0        0 testbridge
+192.168.122.0   0.0.0.0         255.255.255.0   U     0      0        0 virbr0
+```
+
+| 列 | 描述 |
+| --- | --- |
+| Destination | 目标网络或目标主机。当值为 `default`（`0.0.0.0`）时，表示这个是默认网关，所有数据都发到这个网关 |
+| Gateway | 网关地址，`0.0.0.0` 表示对应的 Destination 跟本机在同一个网段，通信时不需要经过网关 |
+| Genmask | Destination 的子网掩码，Destination 是主机时需要设置为 `255.255.255.255`，是默认路由时会设置为 `0.0.0.0` |
+| Flags | 标记 |
+| Metric | 路由距离，到达指定网络所需的中转数 |
+| Ref | 路由项引用次数  |
+| Use | 此路由项被路由软件查找的次数 |
+| Iface | 网卡名字 |
+
+Flags 含义：
+
+- `U` 路由是活动的
+- `H` 目标是个主机
+- `G` 需要经过网关
+- `R` 恢复动态路由产生的表项
+- `D` 由路由的后台程序动态地安装
+- `M` 由路由的后台程序修改
+- `!` 拒绝路由
+
+当在一台 linux 机器上要访问一个目标 ip 时： 
+- 如果本机有目标 ip，则会直接访问本地; 
+- 如果本地没有目标 ip
+  1. 用 `route -n` 查看路由，如果路由条目里包含了目标 ip 的网段，则数据包就会从对应路由条目后面的网卡出去
+  2. 如果没有对应网段的路由条目，则全部都走网关
+  3. 如果网关也没有，则报错：网络不可达
+
+因为本机 ens32 这个网卡有 `16.155.192.0/21` 这个网段的 IP，所以就会默认产生类似下面的路由条目
+
+```bash
+16.155.192.0    0.0.0.0         255.255.248.0   U     100    0        0 ens32
+```
+
+ens32 网卡的 IP：
+```bash
+[root@shcCDFrh75vm7 container]# ip addr
+2: ens32: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:50:56:b0:31:14 brd ff:ff:ff:ff:ff:ff
+    inet 16.155.197.5/21 brd 16.155.199.255 scope global noprefixroute dynamic ens32
+       valid_lft 118238sec preferred_lft 118238sec
+    inet6 fe80::6833:a88a:7b0f:285c/64 scope link noprefixroute
+       valid_lft forever preferred_lft forever
+```
+
+那么根据规则和上面的路由表，如果要访问 `16.155.192.11` 这个IP，会怎么走？
+
+会通过 `16.155.192.0/255.255.248.0` 这个路由条目后面指示的 ens33 网卡去寻找 `16.155.192.11`。
+
+如果要访问 `119.75.217.26` 这个 IP，请问会怎么走？
+
+会通过网关 `16.155.192.1` 去寻找。
+
+
+### route 命令
+
+route 命令可以显示或设置 Linux 内核中的路由表，主要是静态路由。
+
+```bash
+# route  [add|del] [-net|-host] target [netmask Nm] [gw Gw] [[dev] If]
+```
+
+- `add`：增加一条路由规则
+- `del`：删除一条路由规则
+- `-net`：目的地址是一个网络
+- `-host`：目的地址是一个主机
+- `target`：目的网络或主机
+- `netmask`：目的地址的网络掩码
+- `gw`：路由数据包通过的网关
+- `dev`：为路由指定的网络接口
+
+在 CentOS 中默认的内核配置已经包含了路由功能，但默认并没有在系统启动时启用此功能。开启 Linux 的路由功能可以通过调整内核的网络参数来实现。要
+配置和调整内核参数可以使用 sysctl 命令。例如：要开启 Linux 内核的数据包转发功能可以使用如下的命令。
+```bash
+sysctl -w net.ipv4.ip_forward=1
+# or
+vi /etc/sysctl.conf
+net.ipv4.ip_forward = 1
+# 查看是否支持转发
+sysctl net.ipv4.ip_forward
+```
+
+对于局域网中的 Linux 主机，要想访问 Internet，需要将局域网的网关 IP 地址设置为这个主机的默认路由。可以在 `/etc/rc.local` 中添加 route 命令来保证路由设置永久有效。
