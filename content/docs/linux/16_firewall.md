@@ -220,6 +220,12 @@ iptables -I INPUT -p tcp -m multiport --dport 20,21,80 -j ACCEPT
 iptables -I INPUT -p tcp --dport 20450:20480 -j ACCEPT
 iptables -I INPUT -p tcp -m state --state ESTABLISHED -j ACCEPT
 iptables -P INPUT DROP
+
+# 删除规则
+# 添加一条 NAT 规则
+iptables -t nat -A PREROUTING -p tcp -m tcp --dport 80 -j DNAT --to-destination 192.168.99.11:80
+# 删除上面的规则
+iptables -t nat -D PREROUTING -p tcp -m tcp --dport 80 -j DNAT --to-destination 192.168.99.11:80
 ```
 
 `nat` 表使用：
