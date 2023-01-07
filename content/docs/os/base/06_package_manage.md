@@ -1,7 +1,14 @@
 # 包管理器
 
+对于 Windows 系统，最方便的方式就是下载 exe，也就是安装文件。下载后我们直接双击安装即可。
+对于 Linux 来讲，也是类似的方法，你可以下载 rpm 或者 deb。这个就是 Linux 下面的安装包。Linux 现在常用的有两大体系，一个是 CentOS 体系，一个是 Ubuntu 体系，前者使用 rpm，后者使用 deb。
+
+CentOS 下面使用 `rpm -i jdk-XXX_linux-x64_bin.rpm` 进行安装，Ubuntu 下面使用 `dpkg -i jdk-XXX_linux-x64_bin.deb`。其中 `-i` 就是 `install` 的意思。
+
+`rpm -qa` 和 `dpkg -l` 可以查看安装的软件列表，`-q` 就是 `query`，`a` 就是 `all`，`-l` 的意思就是 `list`。
+
 - `rpm`，`yum`：CentOS 和 RedHat 使用 `yum` 包管理器，安装包的格式为 `rpm`。
-- `apt`：Ubuntu 和 Debian 使用 `apt` 包管理器，安装包的格式为 deb
+- `apt`：Ubuntu 和 Debian 使用 `apt` 包管理器，安装包的格式为 `deb`。
 
 ## rpm 包格式
 
@@ -26,6 +33,8 @@
 
 ## yum
 
+相当于 Windows 上的软件管家。
+
 yum 包管理器解决的问题：
 
 1. rpm 包的安装可能有依赖关系，如：
@@ -43,6 +52,8 @@ $ rpm -i vim-enhanced-7.4.160-5.el7.x86_64.rpm
 2. 软件包来源不可靠
 
 ## yum 源
+
+软件管家会有一个统一的服务端，来保存这些软件，但是我们不知道服务端在哪里。而 Linux 允许我们配置从哪里下载这些软件，地点就在配置文件里面。也就是 yum 源。
 
 - <http://mirror.centos.org/centos/7/>
 

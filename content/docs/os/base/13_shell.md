@@ -2,6 +2,8 @@
 
 shell 是 Linux 的命令解释器，解释用户对操作系统的操作。CentOS 默认使用的 shell 是 bash。例如，执行 `ls` 命令时，会先被 shell 对命令和参数进行解释，再交给内核执行。
 
+`/bin/bash` 的位置是用于配置登录后的默认交互命令行的，不像 Windows，登录进去是界面，其实就是 `explorer.exe`。而 Linux 登录后的交互命令行是一个解析脚本的程序，默认是 `/bin/bash`。
+
 执行命令的方式：
 
 - `bash ./test.sh` 创建一个子进程来运行 `test.sh`

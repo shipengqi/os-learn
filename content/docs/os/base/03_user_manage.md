@@ -2,7 +2,7 @@
 
 ## 用户
 
-用户会记录在 `/etc/passwd` 文件中。`/etc/shadow` 是用户密码相关的文件。
+用户会存放在 `/etc/passwd` 文件中。`/etc/shadow` 是用户密码相关的文件。
 
 - `useradd` 创建用户。 `useradd pooky` 添加了一个用户 pooky。 `id pooky` 验证 pooky 用户是否存在。root 的 uid 是 `0`。普通用户的 uid 如果改为 0，那就会具有 root 用户的权限。
   - `-g` 指定用户组。`useradd -g group1 user2` 创建用户 user2 并加入到用户组 group1。添加用户时，不指定用户组，就会默认创建
@@ -16,6 +16,8 @@
 - `chage` 修改用户密码的过期信息。
 
 ## 用户组
+
+用户组的信息存放在 `/etc/group` 文件中。
 
 - `groupadd` 创建用户组 `groupadd group1`
 - `groupdel` 删除用户组
