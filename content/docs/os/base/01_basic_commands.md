@@ -25,5 +25,6 @@ Linux 里面打包和压缩是分开的两个命令：
   - `-z` 可以打包的同时使用 **gzip 压缩**文件，通常会在后缀加上 `.gz` 来表明备份文件的压缩方式，比如 `tar -czf /tmp/backup.tar.gz /etc`。`tgz` 是 `.tar.gz` 的简写
   - `-j` 可以打包的同时使用 **bzip2 压缩**文件，通常会在后缀加上 `.bz2` 或者 `bzip2` 来表明备份文件的压缩方式，比如 `tar -cjf /tmp/backup.tar.bz2 /etc`。`tbz2` 是 `.tar.bz2` 的简写
   - `-v|--verbose` 显示指令执行过程。
+  - `tar -cf - /etc`，`-` 表示将 tar 压缩包发送到标准输出，而不是写入文件。
 - `gzip`, `bzip2` 压缩
   - `gzip` 压缩更快，`bzip2` 压缩比例更高
