@@ -1,3 +1,8 @@
+---
+title: NFS
+weight: 20
+---
+
 # NFS
 
 NFS 在 Linux 中会默认安装。

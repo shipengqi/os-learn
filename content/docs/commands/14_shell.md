@@ -1,3 +1,8 @@
+---
+title: Shell
+weight: 14
+---
+
 # Shell
 
 shell 是 Linux 的命令解释器，解释用户对操作系统的操作。CentOS 默认使用的 shell 是 bash。例如，执行 `ls` 命令时，会先被 shell 对命令和参数进行解释，再交给内核执行。

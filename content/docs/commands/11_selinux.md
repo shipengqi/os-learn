@@ -1,3 +1,8 @@
+---
+title: SELinux
+weight: 11
+---
+
 # SELinux
 
 安全增强型 Linux（Security-Enhanced Linux）简称 SELinux，它是一个 Linux 内核模块，也是 Linux 的一个安全子系统。

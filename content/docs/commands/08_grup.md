@@ -1,3 +1,8 @@
+---
+title: grup
+weight: 8
+---
+
 # grup
 
 grup 是内核启动的引导软件。

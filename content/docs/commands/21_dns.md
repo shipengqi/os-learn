@@ -1,3 +1,8 @@
+---
+title: DNS
+weight: 21
+---
+
 # DNS
 
 DNS（Domain Name System 的缩写）域名系统。

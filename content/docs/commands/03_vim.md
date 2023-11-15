@@ -1,3 +1,8 @@
+---
+title: Vim
+weight: 3
+---
+
 # Vim
 
 vim 四种模式：

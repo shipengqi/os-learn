@@ -1,3 +1,8 @@
+---
+title: pty
+weight: 23
+---
+
 # pty
 
 pty（pseudo terminal）伪终端。tty 可以直接理解为终端。

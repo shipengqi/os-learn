@@ -1,3 +1,8 @@
+---
+title: SSH
+weight: 18
+---
+
 # SSH
 
 telnet 是明文传输，不安全。所以应该使用 SSH 来远程连接。

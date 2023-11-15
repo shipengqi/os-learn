@@ -1,3 +1,8 @@
+---
+title: FTP
+weight: 19
+---
+
 # FTP
 
 ftp 协议的全称是文件传输协议。
