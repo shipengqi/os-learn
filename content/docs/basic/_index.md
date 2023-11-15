@@ -1,4 +1,4 @@
 ---
-title: Linux 基础
-weight: 2
+title: 计算机基础
+weight: 1
 ---
