@@ -1,0 +1,128 @@
+<!doctype html><html lang=en dir=ltr><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="FTP # ftp 协议的全称是文件传输协议。
+FTP 采用两个 TCP 连接来传输一个文件：
+控制连接：服务器以被动的方式，打开众所周知用于 FTP 的端口 21，客户端则主动发起连接。该连接将命令从客户端传给服务器，并传回服务器的应答。常用的命令有： list 获取文件目录 reter 取一个文件 store 存一个文件 数据连接：每当一个文件在客户端与服务器之间传输时，就创建一个数据连接。 FTP 的两种模式 # 两种模式都是站在 FTP 服务器的角度来说的。
+主动模式（PORT） # 客户端随机打开一个大于 1024 的端口 N，向服务器的命令端口 21 发起连接，同时开放 N+1 端口监听，并向服务器发出 port N+1 命令，由服务器从自己的数据端口 20，主动连接到客户端指定的数据端口 N+1。
+被动模式（PASV） # 当开启一个 FTP 连接时，客户端打开两个任意的本地端口 N（大于 1024）和 N+1。第一个端口连接服务器的 21 端口，提交 PASV 命令。然后，服务器会开启一个任意的端口 P（大于 1024），返回 227 entering passive mode 消息，里面有 FTP 服务器开放的用来进行数据传输的端口。客 户端收到消息取得端口号之后，会通过 N+1 号端口连接服务器的端口 P，然后在两个端口之间进行数据传输。
+vsftpd # vsftpd 实现了 ftp 协议。"><meta name=theme-color media="(prefers-color-scheme: light)" content="#ffffff"><meta name=theme-color media="(prefers-color-scheme: dark)" content="#343a40"><meta name=color-scheme content="light dark"><meta property="og:title" content="FTP"><meta property="og:description" content="FTP # ftp 协议的全称是文件传输协议。
+FTP 采用两个 TCP 连接来传输一个文件：
+控制连接：服务器以被动的方式，打开众所周知用于 FTP 的端口 21，客户端则主动发起连接。该连接将命令从客户端传给服务器，并传回服务器的应答。常用的命令有： list 获取文件目录 reter 取一个文件 store 存一个文件 数据连接：每当一个文件在客户端与服务器之间传输时，就创建一个数据连接。 FTP 的两种模式 # 两种模式都是站在 FTP 服务器的角度来说的。
+主动模式（PORT） # 客户端随机打开一个大于 1024 的端口 N，向服务器的命令端口 21 发起连接，同时开放 N+1 端口监听，并向服务器发出 port N+1 命令，由服务器从自己的数据端口 20，主动连接到客户端指定的数据端口 N+1。
+被动模式（PASV） # 当开启一个 FTP 连接时，客户端打开两个任意的本地端口 N（大于 1024）和 N+1。第一个端口连接服务器的 21 端口，提交 PASV 命令。然后，服务器会开启一个任意的端口 P（大于 1024），返回 227 entering passive mode 消息，里面有 FTP 服务器开放的用来进行数据传输的端口。客 户端收到消息取得端口号之后，会通过 N+1 号端口连接服务器的端口 P，然后在两个端口之间进行数据传输。
+vsftpd # vsftpd 实现了 ftp 协议。"><meta property="og:type" content="article"><meta property="og:url" content="http://shipengqi.github.io/os-learn/docs/commands/19_ftp/"><meta property="article:section" content="docs"><meta property="article:modified_time" content="2023-11-15T17:26:03+08:00"><title>FTP | OS Learning</title><link rel=manifest href=/os-learn/manifest.json><link rel=icon href=/os-learn/favicon.png><link rel=stylesheet href=/os-learn/book.min.33a48f5432973b8ff9a82679d9e45d67f2c15d4399bd2829269455cfe390b5e8.css integrity="sha256-M6SPVDKXO4/5qCZ52eRdZ/LBXUOZvSgpJpRVz+OQteg=" crossorigin=anonymous><script defer src=/os-learn/flexsearch.min.js></script>
+<script defer src=/os-learn/en.search.min.9da2651f3362f085ba92fedcac79d3065ce93b32c3817feded7d23b6337f4ee9.js integrity="sha256-naJlHzNi8IW6kv7crHnTBlzpOzLDgX/t7X0jtjN/Tuk=" crossorigin=anonymous></script>
+<script defer src=/os-learn/sw.min.73e4e12d3b3ff9b5bd6410a479234d8908ebac0e4d11ef31f508715b8e7f7c7d.js integrity="sha256-c+ThLTs/+bW9ZBCkeSNNiQjrrA5NEe8x9QhxW45/fH0=" crossorigin=anonymous></script></head><body dir=ltr><input type=checkbox class="hidden toggle" id=menu-control>
+<input type=checkbox class="hidden toggle" id=toc-control><main class="container flex"><aside class=book-menu><div class=book-menu-content><nav><h2 class=book-brand><a class="flex align-center" href=/os-learn/><span>OS Learning</span></a></h2><div class=book-search><input type=text id=book-search-input placeholder=Search aria-label=Search maxlength=64 data-hotkeys=s/><div class="book-search-spinner hidden"></div><ul id=book-search-results></ul></div><ul><li><a href=https://shipengqi.github.io/ target=_blank rel=noopener>Blog</a></li><li><a href=https://github.com/shipengqi/os-learn target=_blank rel=noopener>Github</a></li></ul><ul><li><span>Linux 常用命令</span><ul><li><a href=/os-learn/docs/commands/01_view_text/>查看文件内容</a></li><li><a href=/os-learn/docs/commands/02_tar/>打包压缩</a></li><li><a href=/os-learn/docs/commands/03_vim/>Vim</a></li><li><a href=/os-learn/docs/commands/04_user_manage/>用户管理</a></li><li><a href=/os-learn/docs/commands/05_file_perm/>文件权限</a></li><li><a href=/os-learn/docs/commands/06_network/>网络管理</a></li><li><a href=/os-learn/docs/commands/07_package_manage/>包管理器</a></li><li><a href=/os-learn/docs/commands/08_grup/>grup</a></li><li><a href=/os-learn/docs/commands/09_process/>进程管理</a></li><li><a href=/os-learn/docs/commands/10_systemd/>systemctl</a></li><li><a href=/os-learn/docs/commands/11_selinux/>SELinux</a></li><li><a href=/os-learn/docs/commands/12_mem_disk/>内存和磁盘</a></li><li><a href=/os-learn/docs/commands/13_sar/>查看系统状态</a></li><li><a href=/os-learn/docs/commands/14_shell/>Shell</a></li><li><a href=/os-learn/docs/commands/15_script_priority/>脚本控制</a></li><li><a href=/os-learn/docs/commands/16_text_operation/>操作文本</a></li><li><a href=/os-learn/docs/commands/17_firewall/>防火墙</a></li><li><a href=/os-learn/docs/commands/18_ssh/>SSH</a></li><li><a href=/os-learn/docs/commands/19_ftp/ class=active>FTP</a></li><li><a href=/os-learn/docs/commands/20_nfs/>NFS</a></li><li><a href=/os-learn/docs/commands/21_dns/>DNS</a></li><li><a href=/os-learn/docs/commands/22_kernel_upgrade/>内核升级</a></li><li><a href=/os-learn/docs/commands/23_pty_tty/>pty</a></li></ul></li></ul></nav><script>(function(){var e=document.querySelector("aside .book-menu-content");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script></div></aside><div class=book-page><header class=book-header><div class="flex align-center justify-between"><label for=menu-control><img src=/os-learn/svg/menu.svg class=book-icon alt=Menu></label>
+<strong>FTP</strong>
+<label for=toc-control><img src=/os-learn/svg/toc.svg class=book-icon alt="Table of Contents"></label></div><aside class="hidden clearfix"><nav id=TableOfContents><ul><li><a href=#ftp>FTP</a><ul><li><a href=#ftp-的两种模式>FTP 的两种模式</a><ul><li><a href=#主动模式port>主动模式（PORT）</a></li><li><a href=#被动模式pasv>被动模式（PASV）</a></li></ul></li><li><a href=#vsftpd>vsftpd</a><ul><li><a href=#vsftpd-配置>vsftpd 配置</a></li></ul></li><li><a href=#虚拟用户>虚拟用户</a></li></ul></li></ul></nav></aside></header><article class=markdown><h1 id=ftp>FTP
+<a class=anchor href=#ftp>#</a></h1><p>ftp 协议的全称是文件传输协议。</p><p>FTP 采用两个 TCP 连接来传输一个文件：</p><ul><li><strong>控制连接</strong>：服务器以被动的方式，打开众所周知用于 FTP 的端口 21，客户端则主动发起连接。该连接将命令从客户端传给服务器，并传回服务器的应答。常用的命令有：<ul><li><code>list</code> 获取文件目录</li><li><code>reter</code> 取一个文件</li><li><code>store</code> 存一个文件</li></ul></li><li><strong>数据连接</strong>：每当一个文件在客户端与服务器之间传输时，就创建一个数据连接。</li></ul><h2 id=ftp-的两种模式>FTP 的两种模式
+<a class=anchor href=#ftp-%e7%9a%84%e4%b8%a4%e7%a7%8d%e6%a8%a1%e5%bc%8f>#</a></h2><p>两种模式都是站在 FTP 服务器的角度来说的。</p><h3 id=主动模式port>主动模式（PORT）
+<a class=anchor href=#%e4%b8%bb%e5%8a%a8%e6%a8%a1%e5%bc%8fport>#</a></h3><p>客户端随机打开一个大于 1024 的端口 N，向服务器的命令端口 21 发起连接，同时开放 N+1 端口监听，并向服务器发出 <code>port N+1</code> 命令，由服务器从自己的数据端口 20，主动连接到客户端指定的数据端口 N+1。</p><h3 id=被动模式pasv>被动模式（PASV）
+<a class=anchor href=#%e8%a2%ab%e5%8a%a8%e6%a8%a1%e5%bc%8fpasv>#</a></h3><p>当开启一个 FTP 连接时，客户端打开两个任意的本地端口 N（大于 1024）和 N+1。第一个端口连接服务器的 21 端口，提交 PASV 命令。然后，服务器会开启一个任意的端口 P（大于 1024），返回 <code>227 entering passive mode</code> 消息，里面有 FTP 服务器开放的用来进行数据传输的端口。客
+户端收到消息取得端口号之后，会通过 N+1 号端口连接服务器的端口 P，然后在两个端口之间进行数据传输。</p><h2 id=vsftpd>vsftpd
+<a class=anchor href=#vsftpd>#</a></h2><p>vsftpd 实现了 ftp 协议。</p><p>安装：<code>yum install vsftpd ftp</code> <code>ftp</code> 是客户端。
+启动：<code>systemctl start vsftpd.service</code>
+连接 vsftpd：<code>ftp &lt;host></code></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># ftp localhost</span>
+</span></span><span style=display:flex><span>Connected to localhost <span style=color:#f92672>(</span>127.0.0.1<span style=color:#f92672>)</span>.
+</span></span><span style=display:flex><span><span style=color:#ae81ff>220</span> <span style=color:#f92672>(</span>vsFTPd 3.0.2<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>Name <span style=color:#f92672>(</span>localhost:root<span style=color:#f92672>)</span>: ftp     <span style=color:#75715e># ftp 匿名账户，不需要密码</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>331</span> Please specify the password.
+</span></span><span style=display:flex><span>Password:                      <span style=color:#75715e># 这里密码为空，直接回车</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>230</span> Login successful.
+</span></span><span style=display:flex><span>Remote system type is UNIX.
+</span></span><span style=display:flex><span>Using binary mode to transfer files.
+</span></span><span style=display:flex><span>ftp&gt; ls
+</span></span><span style=display:flex><span><span style=color:#ae81ff>227</span> Entering Passive Mode <span style=color:#f92672>(</span>127,0,0,1,190,29<span style=color:#f92672>)</span>.
+</span></span><span style=display:flex><span><span style=color:#ae81ff>150</span> Here comes the directory listing.
+</span></span><span style=display:flex><span>drwxr-xr-x    <span style=color:#ae81ff>2</span> <span style=color:#ae81ff>0</span>        <span style=color:#ae81ff>0</span>               <span style=color:#ae81ff>6</span> Apr <span style=color:#ae81ff>01</span> 04:55 pub
+</span></span><span style=display:flex><span><span style=color:#ae81ff>226</span> Directory send OK.
+</span></span><span style=display:flex><span>ftp&gt; quit
+</span></span><span style=display:flex><span><span style=color:#ae81ff>221</span> Goodbye.
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># ls /var/ftp/      # 匿名账户登录后，会在该目录下</span>
+</span></span><span style=display:flex><span>pub                                      <span style=color:#75715e># 需要共享的文件放在该目录下，就可以被匿名账户访问</span>
+</span></span></code></pre></div><p>vsftpd 支持系统的本地用户：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># useradd user1</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># echo 123 | passwd --stdin user1</span>
+</span></span><span style=display:flex><span>Changing password <span style=color:#66d9ef>for</span> user user1.
+</span></span><span style=display:flex><span>passwd: all authentication tokens updated successfully.
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># ftp localhost</span>
+</span></span><span style=display:flex><span>Connected to localhost <span style=color:#f92672>(</span>127.0.0.1<span style=color:#f92672>)</span>.
+</span></span><span style=display:flex><span><span style=color:#ae81ff>220</span> <span style=color:#f92672>(</span>vsFTPd 3.0.2<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>Name <span style=color:#f92672>(</span>localhost:root<span style=color:#f92672>)</span>: user1
+</span></span><span style=display:flex><span><span style=color:#ae81ff>331</span> Please specify the password.
+</span></span><span style=display:flex><span>Password:
+</span></span><span style=display:flex><span><span style=color:#ae81ff>230</span> Login successful.
+</span></span><span style=display:flex><span>Remote system type is UNIX.
+</span></span><span style=display:flex><span>Using binary mode to transfer files.
+</span></span><span style=display:flex><span>ftp&gt; ls -l                                     <span style=color:#75715e># 登录后会进入到 user1 的 home 目录下</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>227</span> Entering Passive Mode <span style=color:#f92672>(</span>127,0,0,1,229,126<span style=color:#f92672>)</span>.
+</span></span><span style=display:flex><span><span style=color:#ae81ff>150</span> Here comes the directory listing.
+</span></span><span style=display:flex><span><span style=color:#ae81ff>226</span> Directory send OK.
+</span></span><span style=display:flex><span>ftp&gt; quit
+</span></span><span style=display:flex><span><span style=color:#ae81ff>221</span> Goodbye.
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># su - user1</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>user1@SGDLITVM0905 ~<span style=color:#f92672>]</span>$ ls
+</span></span></code></pre></div><h3 id=vsftpd-配置>vsftpd 配置
+<a class=anchor href=#vsftpd-%e9%85%8d%e7%bd%ae>#</a></h3><p>主要配置文件：</p><ul><li><code>/etc/vsftpd/vsftpd.conf</code> 主配置文件</li><li><code>/etc/vsftpd/ftpusers</code> 用户黑名单，不允许登录 ftp 服务器的用户，例如 <code>root</code> 权限太大，可以访问到所有文件，所以被禁止使用登录。</li><li><code>/etc/vsftpd/user_list</code> 用户白名单</li></ul><p><code>vsftpd.conf</code> 配置：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e># 允许匿名用户登陆，匿名用户使用的登陆名为 ftp 或 anonymous</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 匿名用户家目录 /var/ftp，且只能下载不能上传</span>
+</span></span><span style=display:flex><span>anonymous_enable<span style=color:#f92672>=</span>YES
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 允许本地用户登陆</span>
+</span></span><span style=display:flex><span>local_enable<span style=color:#f92672>=</span>YES
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 本地用户是否可以写入</span>
+</span></span><span style=display:flex><span>write_enable<span style=color:#f92672>=</span>YES
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 设置 FTP 服务器建立连接所监听的端口，默认值为 21</span>
+</span></span><span style=display:flex><span>listen_port<span style=color:#f92672>=</span><span style=color:#ae81ff>21</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 指定 FTP 使用 20 端口进行数据传输，默认值为 YES</span>
+</span></span><span style=display:flex><span>connect_from_port_20<span style=color:#f92672>=</span>YES
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 是否启用 vsftpd.user_list 文件</span>
+</span></span><span style=display:flex><span>userlist_enable<span style=color:#f92672>=</span>YES
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 决定 vsftpd.user_list 文件中的用户是否能够访问 FTP 服务器。若设置为 YES，则 vsftpd.user_list 文件中的用户不允许访问 FTP，若设置为 NO，则只有 vsftpd.user_list 文件中的用户才能访问 FTP。</span>
+</span></span><span style=display:flex><span>userlist_deny<span style=color:#f92672>=</span>YES
+</span></span></code></pre></div><p>上面的配置中 <code>local_enable</code>，如果 selinux 为 <code>enforcing</code> 需要检查 <code>ftp_home_dir</code> 是否为 <code>on</code>。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># getsebool -a | grep ftpd</span>
+</span></span><span style=display:flex><span>ftpd_anon_write --&gt; off
+</span></span><span style=display:flex><span>ftpd_connect_all_unreserved --&gt; off
+</span></span><span style=display:flex><span>ftpd_connect_db --&gt; off
+</span></span><span style=display:flex><span>ftpd_full_access --&gt; off
+</span></span><span style=display:flex><span>ftpd_use_cifs --&gt; off
+</span></span><span style=display:flex><span>ftpd_use_fusefs --&gt; off
+</span></span><span style=display:flex><span>ftpd_use_nfs --&gt; off
+</span></span><span style=display:flex><span>ftpd_use_passive_mode --&gt; off
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># setsebool -P ftpd_use_nfs 1</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># getsebool -a | grep ftpd</span>
+</span></span><span style=display:flex><span>ftpd_anon_write --&gt; off
+</span></span><span style=display:flex><span>ftpd_connect_all_unreserved --&gt; off
+</span></span><span style=display:flex><span>ftpd_connect_db --&gt; off
+</span></span><span style=display:flex><span>ftpd_full_access --&gt; off
+</span></span><span style=display:flex><span>ftpd_use_cifs --&gt; off
+</span></span><span style=display:flex><span>ftpd_use_fusefs --&gt; off
+</span></span><span style=display:flex><span>ftpd_use_nfs --&gt; on
+</span></span><span style=display:flex><span>ftpd_use_passive_mode --&gt; off
+</span></span></code></pre></div><p>修改后使用 <code>systemctl reload vsftpd</code> 使配置生效。</p><p>登录另一台机器，使用 ftp 上传文件：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0906 ~<span style=color:#f92672>]</span><span style=color:#75715e># ftp 16.187.191.150     # 连接 vsftpd</span>
+</span></span><span style=display:flex><span>Connected to 16.187.191.150 <span style=color:#f92672>(</span>16.187.191.150<span style=color:#f92672>)</span>.
+</span></span><span style=display:flex><span><span style=color:#ae81ff>220</span> <span style=color:#f92672>(</span>vsFTPd 3.0.2<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>Name <span style=color:#f92672>(</span>16.187.191.150:root<span style=color:#f92672>)</span>: user1
+</span></span><span style=display:flex><span><span style=color:#ae81ff>331</span> Please specify the password.
+</span></span><span style=display:flex><span>Password:
+</span></span><span style=display:flex><span><span style=color:#ae81ff>230</span> Login successful.
+</span></span><span style=display:flex><span>Remote system type is UNIX.
+</span></span><span style=display:flex><span>Using binary mode to transfer files.
+</span></span><span style=display:flex><span>ftp&gt; ls                               <span style=color:#75715e># 查看 user1 的 home 目录</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>227</span> Entering Passive Mode <span style=color:#f92672>(</span>16,187,191,150,84,31<span style=color:#f92672>)</span>.
+</span></span><span style=display:flex><span><span style=color:#ae81ff>150</span> Here comes the directory listing.
+</span></span><span style=display:flex><span><span style=color:#ae81ff>226</span> Directory send OK.
+</span></span><span style=display:flex><span>ftp&gt; !ls                              <span style=color:#75715e># 查看当前主机的本地目录</span>
+</span></span><span style=display:flex><span>anaconda-ks.cfg  original-ks.cfg  upload.txt  workspace  workspace2
+</span></span><span style=display:flex><span>ftp&gt; put upload.txt                   <span style=color:#75715e># 使用 put 命令上传文件</span>
+</span></span><span style=display:flex><span>local: upload.txt remote: upload.txt
+</span></span><span style=display:flex><span><span style=color:#ae81ff>227</span> Entering Passive Mode <span style=color:#f92672>(</span>16,187,191,150,100,251<span style=color:#f92672>)</span>.
+</span></span><span style=display:flex><span><span style=color:#ae81ff>150</span> Ok to send data.
+</span></span><span style=display:flex><span><span style=color:#ae81ff>226</span> Transfer complete.
+</span></span><span style=display:flex><span>ftp&gt; get &lt;file&gt;                       <span style=color:#75715e># 使用 get 下载文件</span>
+</span></span></code></pre></div><h2 id=虚拟用户>虚拟用户
+<a class=anchor href=#%e8%99%9a%e6%8b%9f%e7%94%a8%e6%88%b7>#</a></h2><ul><li><code>guest_enable=YES</code></li><li><code>guest_username=vuser</code></li><li><code>user_config_dir=/etc/vsftpd/vuserconfig</code></li><li><code>allow_writeable_chroot=YES</code></li><li><code>pam_service_name=vsftpd.vuser</code></li></ul></article><footer class=book-footer><div class="flex flex-wrap justify-between"><div><a class="flex align-center" href=https://github.com/shipengqi/os-learn/commit/4f49c8bc26ad1442af2b9f5753687f18dc226c1a title='Last modified by shipengqi | November 15, 2023' target=_blank rel=noopener><img src=/os-learn/svg/calendar.svg class=book-icon alt=Calendar>
+<span>November 15, 2023</span></a></div><div><a class="flex align-center" href=https://github.com/shipengqi/os-learn/edit/master/content/docs/commands/19_ftp.md target=_blank rel=noopener><img src=/os-learn/svg/edit.svg class=book-icon alt=Edit>
+<span>Edit this page</span></a></div></div><script>(function(){function e(e){const t=window.getSelection(),n=document.createRange();n.selectNodeContents(e),t.removeAllRanges(),t.addRange(n)}document.querySelectorAll("pre code").forEach(t=>{t.addEventListener("click",function(){if(window.getSelection().toString())return;e(t.parentElement),navigator.clipboard&&navigator.clipboard.writeText(t.parentElement.textContent)})})})()</script></footer><div class=book-comments></div><label for=menu-control class="hidden book-menu-overlay"></label></div><aside class=book-toc><div class=book-toc-content><nav id=TableOfContents><ul><li><a href=#ftp>FTP</a><ul><li><a href=#ftp-的两种模式>FTP 的两种模式</a><ul><li><a href=#主动模式port>主动模式（PORT）</a></li><li><a href=#被动模式pasv>被动模式（PASV）</a></li></ul></li><li><a href=#vsftpd>vsftpd</a><ul><li><a href=#vsftpd-配置>vsftpd 配置</a></li></ul></li><li><a href=#虚拟用户>虚拟用户</a></li></ul></li></ul></nav></div></aside></main></body></html>

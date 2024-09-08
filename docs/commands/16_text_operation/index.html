@@ -1,0 +1,457 @@
+<!doctype html><html lang=en dir=ltr><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="操作文本 # 文本搜索一般会使用正则表达式。
+元字符 # 常用的元字符：
+. 匹配除了换行符外的任意一个字符 * 匹配任意个跟它前面的字符 [] 匹配方括号中的字符类中的任意一个，比如 [Hh]ello 就可以匹配 hello 和 Hello。 ^ 匹配开头 $ 匹配结尾 \ 转义字符 扩展元字符：
++ 匹配前面的正则表达式至少出现一次 ? 匹配前面的正则表达式出现一次或者零次 | 匹配前面或者后面的正则表达式 grep # grep 用来查找文件里符合条件的字符串。 grep 会把符合条件的行显示出来。
+[root@pooky init.d]# grep password /root/anaconda-ks.cfg # Root password [root@pooky init.d]# grep -i password /root/anaconda-ks.cfg -i 忽略大小写 # Root password [root@pooky ~]# grep pass.... /root/anaconda-ks.cfg # 可以使用元字符 . 匹配任意一个字符 auth --enableshadow --passalgo=sha512 # Root password [root@pooky ~]# grep pass."><meta name=theme-color media="(prefers-color-scheme: light)" content="#ffffff"><meta name=theme-color media="(prefers-color-scheme: dark)" content="#343a40"><meta name=color-scheme content="light dark"><meta property="og:title" content="操作文本"><meta property="og:description" content="操作文本 # 文本搜索一般会使用正则表达式。
+元字符 # 常用的元字符：
+. 匹配除了换行符外的任意一个字符 * 匹配任意个跟它前面的字符 [] 匹配方括号中的字符类中的任意一个，比如 [Hh]ello 就可以匹配 hello 和 Hello。 ^ 匹配开头 $ 匹配结尾 \ 转义字符 扩展元字符：
++ 匹配前面的正则表达式至少出现一次 ? 匹配前面的正则表达式出现一次或者零次 | 匹配前面或者后面的正则表达式 grep # grep 用来查找文件里符合条件的字符串。 grep 会把符合条件的行显示出来。
+[root@pooky init.d]# grep password /root/anaconda-ks.cfg # Root password [root@pooky init.d]# grep -i password /root/anaconda-ks.cfg -i 忽略大小写 # Root password [root@pooky ~]# grep pass.... /root/anaconda-ks.cfg # 可以使用元字符 . 匹配任意一个字符 auth --enableshadow --passalgo=sha512 # Root password [root@pooky ~]# grep pass."><meta property="og:type" content="article"><meta property="og:url" content="http://shipengqi.github.io/os-learn/docs/commands/16_text_operation/"><meta property="article:section" content="docs"><meta property="article:modified_time" content="2023-11-15T17:26:03+08:00"><title>操作文本 | OS Learning</title><link rel=manifest href=/os-learn/manifest.json><link rel=icon href=/os-learn/favicon.png><link rel=stylesheet href=/os-learn/book.min.33a48f5432973b8ff9a82679d9e45d67f2c15d4399bd2829269455cfe390b5e8.css integrity="sha256-M6SPVDKXO4/5qCZ52eRdZ/LBXUOZvSgpJpRVz+OQteg=" crossorigin=anonymous><script defer src=/os-learn/flexsearch.min.js></script>
+<script defer src=/os-learn/en.search.min.9da2651f3362f085ba92fedcac79d3065ce93b32c3817feded7d23b6337f4ee9.js integrity="sha256-naJlHzNi8IW6kv7crHnTBlzpOzLDgX/t7X0jtjN/Tuk=" crossorigin=anonymous></script>
+<script defer src=/os-learn/sw.min.73e4e12d3b3ff9b5bd6410a479234d8908ebac0e4d11ef31f508715b8e7f7c7d.js integrity="sha256-c+ThLTs/+bW9ZBCkeSNNiQjrrA5NEe8x9QhxW45/fH0=" crossorigin=anonymous></script></head><body dir=ltr><input type=checkbox class="hidden toggle" id=menu-control>
+<input type=checkbox class="hidden toggle" id=toc-control><main class="container flex"><aside class=book-menu><div class=book-menu-content><nav><h2 class=book-brand><a class="flex align-center" href=/os-learn/><span>OS Learning</span></a></h2><div class=book-search><input type=text id=book-search-input placeholder=Search aria-label=Search maxlength=64 data-hotkeys=s/><div class="book-search-spinner hidden"></div><ul id=book-search-results></ul></div><ul><li><a href=https://shipengqi.github.io/ target=_blank rel=noopener>Blog</a></li><li><a href=https://github.com/shipengqi/os-learn target=_blank rel=noopener>Github</a></li></ul><ul><li><span>Linux 常用命令</span><ul><li><a href=/os-learn/docs/commands/01_view_text/>查看文件内容</a></li><li><a href=/os-learn/docs/commands/02_tar/>打包压缩</a></li><li><a href=/os-learn/docs/commands/03_vim/>Vim</a></li><li><a href=/os-learn/docs/commands/04_user_manage/>用户管理</a></li><li><a href=/os-learn/docs/commands/05_file_perm/>文件权限</a></li><li><a href=/os-learn/docs/commands/06_network/>网络管理</a></li><li><a href=/os-learn/docs/commands/07_package_manage/>包管理器</a></li><li><a href=/os-learn/docs/commands/08_grup/>grup</a></li><li><a href=/os-learn/docs/commands/09_process/>进程管理</a></li><li><a href=/os-learn/docs/commands/10_systemd/>systemctl</a></li><li><a href=/os-learn/docs/commands/11_selinux/>SELinux</a></li><li><a href=/os-learn/docs/commands/12_mem_disk/>内存和磁盘</a></li><li><a href=/os-learn/docs/commands/13_sar/>查看系统状态</a></li><li><a href=/os-learn/docs/commands/14_shell/>Shell</a></li><li><a href=/os-learn/docs/commands/15_script_priority/>脚本控制</a></li><li><a href=/os-learn/docs/commands/16_text_operation/ class=active>操作文本</a></li><li><a href=/os-learn/docs/commands/17_firewall/>防火墙</a></li><li><a href=/os-learn/docs/commands/18_ssh/>SSH</a></li><li><a href=/os-learn/docs/commands/19_ftp/>FTP</a></li><li><a href=/os-learn/docs/commands/20_nfs/>NFS</a></li><li><a href=/os-learn/docs/commands/21_dns/>DNS</a></li><li><a href=/os-learn/docs/commands/22_kernel_upgrade/>内核升级</a></li><li><a href=/os-learn/docs/commands/23_pty_tty/>pty</a></li></ul></li></ul></nav><script>(function(){var e=document.querySelector("aside .book-menu-content");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script></div></aside><div class=book-page><header class=book-header><div class="flex align-center justify-between"><label for=menu-control><img src=/os-learn/svg/menu.svg class=book-icon alt=Menu></label>
+<strong>操作文本</strong>
+<label for=toc-control><img src=/os-learn/svg/toc.svg class=book-icon alt="Table of Contents"></label></div><aside class="hidden clearfix"><nav id=TableOfContents><ul><li><a href=#操作文本>操作文本</a><ul><li><a href=#元字符>元字符</a></li><li><a href=#grep>grep</a></li><li><a href=#find>find</a></li><li><a href=#sed-和-awk>sed 和 awk</a><ul><li><a href=#sed>sed</a></li><li><a href=#awk>awk</a></li></ul></li></ul></li></ul></nav></aside></header><article class=markdown><h1 id=操作文本>操作文本
+<a class=anchor href=#%e6%93%8d%e4%bd%9c%e6%96%87%e6%9c%ac>#</a></h1><p>文本搜索一般会使用正则表达式。</p><h2 id=元字符>元字符
+<a class=anchor href=#%e5%85%83%e5%ad%97%e7%ac%a6>#</a></h2><p>常用的元字符：</p><ul><li><code>.</code> 匹配除了换行符外的任意一个字符</li><li><code>*</code> 匹配任意个跟它前面的字符</li><li><code>[]</code> 匹配方括号中的字符类中的任意一个，比如 <code>[Hh]ello</code> 就可以匹配 hello 和 Hello。</li><li><code>^</code> 匹配开头</li><li><code>$</code> 匹配结尾</li><li><code>\</code> 转义字符</li></ul><p>扩展元字符：</p><ul><li><code>+</code> 匹配前面的正则表达式至少出现一次</li><li><code>?</code> 匹配前面的正则表达式出现一次或者零次</li><li><code>|</code> 匹配前面或者后面的正则表达式</li></ul><h2 id=grep>grep
+<a class=anchor href=#grep>#</a></h2><p>grep 用来查找文件里符合条件的字符串。 grep 会把符合条件的行显示出来。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@pooky init.d<span style=color:#f92672>]</span><span style=color:#75715e># grep password /root/anaconda-ks.cfg</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Root password</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@pooky init.d<span style=color:#f92672>]</span><span style=color:#75715e># grep -i password /root/anaconda-ks.cfg  -i 忽略大小写</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Root password</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@pooky ~<span style=color:#f92672>]</span><span style=color:#75715e># grep pass.... /root/anaconda-ks.cfg  # 可以使用元字符 . 匹配任意一个字符</span>
+</span></span><span style=display:flex><span>auth --enableshadow --passalgo<span style=color:#f92672>=</span>sha512
+</span></span><span style=display:flex><span><span style=color:#75715e># Root password</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@pooky ~<span style=color:#f92672>]</span><span style=color:#75715e># grep pass....$ /root/anaconda-ks.cfg  # $ 表示结尾</span>
+</span></span><span style=display:flex><span>auth --enableshadow --passalgo<span style=color:#f92672>=</span>sha512
+</span></span><span style=display:flex><span><span style=color:#75715e># Root password</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@pooky ~<span style=color:#f92672>]</span><span style=color:#75715e># grep pass...d$ /root/anaconda-ks.cfg</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Root password</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@pooky ~<span style=color:#f92672>]</span><span style=color:#75715e># grep pass.*$ /root/anaconda-ks.cfg  # .* 就表示任意个字符</span>
+</span></span><span style=display:flex><span>auth --enableshadow --passalgo<span style=color:#f92672>=</span>sha512
+</span></span><span style=display:flex><span><span style=color:#75715e># Root password</span>
+</span></span><span style=display:flex><span>user --groups<span style=color:#f92672>=</span>wheel --name<span style=color:#f92672>=</span>admin --passwd<span style=color:#f92672>=</span>$6$Lh0jvsS/YklFVYDM$WjPFI.WaMd3be/qiyFVUQkjEFN0PGQcnRTJFUDejJMUS24DA.M2rJ039hi/ubRiaNY4QNt661FARlxZqL.nCs0 --iscrypted --gecos<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;admin&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@pooky ~<span style=color:#f92672>]</span><span style=color:#75715e># grep ^# /root/anaconda-ks.cfg    # 以 # 为开头的行</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#version=DEVEL</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># System authorization information</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Use CDROM installation media</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Use graphical install</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Run the Setup Agent on first boot</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Keyboard layouts</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># System language</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Network information</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Root password</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># System services</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># System timezone</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># X Window System configuration information</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># System bootloader configuration</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Partition clearing information</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Disk partitioning information</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@pooky ~<span style=color:#f92672>]</span><span style=color:#75715e># grep &#39;#&#39; *.sh   # 当前目录中，查找后缀有 .sh 文件中包含 # 字符串的行</span>
+</span></span><span style=display:flex><span>Usage: grep <span style=color:#f92672>[</span>OPTION<span style=color:#f92672>]</span>... PATTERN <span style=color:#f92672>[</span>FILE<span style=color:#f92672>]</span>...
+</span></span><span style=display:flex><span>Try <span style=color:#e6db74>&#39;grep --help&#39;</span> <span style=color:#66d9ef>for</span> more information.
+</span></span></code></pre></div><h2 id=find>find
+<a class=anchor href=#find>#</a></h2><p>find 命令用来在指定目录下查找文件。<code>find &lt;文件路径> &lt;查找条件> [补充条件]</code>。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@pooky ~<span style=color:#f92672>]</span><span style=color:#75715e># find /etc -name pass*   # 查找 /etc 目录下 pass 前缀的文件</span>
+</span></span><span style=display:flex><span>/etc/pam.d/passwd
+</span></span><span style=display:flex><span>/etc/pam.d/password-auth-ac
+</span></span><span style=display:flex><span>/etc/pam.d/password-auth
+</span></span><span style=display:flex><span>/etc/openldap/certs/password
+</span></span><span style=display:flex><span>/etc/passwd
+</span></span><span style=display:flex><span>/etc/selinux/targeted/active/modules/100/passenger
+</span></span><span style=display:flex><span>/etc/passwd-
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@pooky ~<span style=color:#f92672>]</span><span style=color:#75715e># find /etc -regex .*wd$  # 使用正则 -regex</span>
+</span></span><span style=display:flex><span>/etc/security/opasswd
+</span></span><span style=display:flex><span>/etc/pam.d/passwd
+</span></span><span style=display:flex><span>/etc/passwd
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@pooky ~<span style=color:#f92672>]</span><span style=color:#75715e># find /etc -type f -regex .*wd$</span>
+</span></span><span style=display:flex><span>/etc/security/opasswd
+</span></span><span style=display:flex><span>/etc/pam.d/passwd
+</span></span><span style=display:flex><span>/etc/passwd
+</span></span></code></pre></div><p>选项：
+<code>-type</code> : 指定文件类型，如 <code>find -type f</code> 查找普通文件</p><h2 id=sed-和-awk>sed 和 awk
+<a class=anchor href=#sed-%e5%92%8c-awk>#</a></h2><p>sed 和 awk 是行编辑器。vim 是全文本编辑器。</p><h3 id=sed>sed
+<a class=anchor href=#sed>#</a></h3><p>sed 命令一般用于对文本内容做替换：<code>sed [-hnV][-e &lt;script>][-f &lt;script 文件>] [文本文件]</code>，例如：</p><p><code>sed '/user1/s/user1/u1' /etc/passwd</code></p><p>选项：</p><ul><li><code>-e</code>：直接在命令行模式上进行 sed 动作编辑，此为默认选项</li><li><code>-f</code>：将 sed 的动作写在一个文件内，用 <code>–f filename</code> 执行 filename 内的 sed 动作</li><li><code>-i</code>：直接修改文件内容</li><li><code>-n</code>：取消默认的完整输出，只打印模式匹配的行</li><li><code>-r</code>：不需要转义</li></ul><p>动作：</p><ul><li><code>s</code>：替换<ul><li><code>sed 's/old/new/' filename</code></li><li><code>sed -e 's/old/new/' -e 's/old/new/' filename ...</code> 可以执行多次替换脚本但是不能省略 <code>-e</code></li><li><code>sed -i 's/old/nnew/' 's/old/new/' filename ...</code> 直接修改文件内容</li></ul></li><li><code>d</code>：删除<ul><li><code>sed /匹配模式/d</code> 删除匹配到的行</li></ul></li><li><code>a</code>：追加</li><li><code>i</code>：插入</li><li><code>c</code>：更改</li><li><code>r</code>：读取</li><li><code>w</code>：写入，使用和 <code>r</code> 类似</li><li><code>n</code>：读入下一行</li><li><code>p</code>：打印匹配的行</li><li><code>=</code>：打印行号</li></ul><p>sed 的工作方式：</p><ol><li>将文件以行为单位读取到内存（模式空间）</li><li>使用 sed 的每个脚本对该行进行操作</li><li>处理完成后输出该行</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># echo a a a &gt; afile</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed &#39;s/a/aa/&#39; afile</span>
+</span></span><span style=display:flex><span>aa a a
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed &#39;s///abc/&#39; afile        # 如果原始字符是 / 和 分隔符冲突会报错</span>
+</span></span><span style=display:flex><span>sed: -e expression <span style=color:#75715e>#1, char 5: unknown option to `s&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed &#39;s!/!abc!&#39; afile        # 可以把分隔符换成 !，或者其他字符</span>
+</span></span><span style=display:flex><span>a a a
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed -e &#39;s/a/aa&#39; -e &#39;a/aa/bb&#39; afile  # 最后的分隔符不能省略</span>
+</span></span><span style=display:flex><span>sed: -e expression <span style=color:#75715e>#1, char 6: unterminated `s&#39; command</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed -e &#39;s/a/aa/&#39; -e &#39;s/aa/bb/&#39; afile # 执行多个脚本</span>
+</span></span><span style=display:flex><span>bb a a
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed -e &#39;s/a/aa/;s/aa/bb/&#39; afile # 执行多个脚本的简写形式</span>
+</span></span><span style=display:flex><span>bb a a
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed -e &#39;s/a/aa/;s/aa/bb/&#39; afile bfile cfile # 可以修改多个文件</span>
+</span></span><span style=display:flex><span>bb a a
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># cat afile                      # 原始文件并没有变化</span>
+</span></span><span style=display:flex><span>a a a
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed -i &#39;s/a/aa/;s/aa/bb/&#39; afile  # -i 可以使修改的内容作用到文件</span>
+</span></span><span style=display:flex><span>bb a a
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># cat afile</span>
+</span></span><span style=display:flex><span>bb a a
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed -i &#39;s/a/aa/;s/aa/bb/&#39; afile &gt; bfile # 如果不行修改原始文件，可使用重定向输出到另一个文件</span>
+</span></span></code></pre></div><p>sed 元字符的使用：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># head -5 /etc/passwd</span>
+</span></span><span style=display:flex><span>root:x:0:0:root:/root:/bin/bash
+</span></span><span style=display:flex><span>bin:x:1:1:bin:/bin:/sbin/nologin
+</span></span><span style=display:flex><span>daemon:x:2:2:daemon:/sbin:/sbin/nologin
+</span></span><span style=display:flex><span>adm:x:3:4:adm:/var/adm:/sbin/nologin
+</span></span><span style=display:flex><span>lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
+</span></span><span style=display:flex><span>You have new mail in /var/spool/mail/root
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># head -5 /etc/passwd | sed &#39;s/...//&#39;  # 表示替换三个任意字符为空</span>
+</span></span><span style=display:flex><span>t:x:0:0:root:/root:/bin/bash
+</span></span><span style=display:flex><span>:x:1:1:bin:/bin:/sbin/nologin
+</span></span><span style=display:flex><span>mon:x:2:2:daemon:/sbin:/sbin/nologin
+</span></span><span style=display:flex><span>:x:3:4:adm:/var/adm:/sbin/nologin
+</span></span><span style=display:flex><span>x:4:7:lp:/var/spool/lpd:/sbin/nologin
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># head -5 /etc/passwd | sed &#39;s/s*bin//&#39;  # 替换 sbin 或 bin 字符为空</span>
+</span></span><span style=display:flex><span>root:x:0:0:root:/root://bash                                  <span style=color:#75715e># sed 默认只替换每一行第一次匹配的字符</span>
+</span></span><span style=display:flex><span>:x:1:1:bin:/bin:/sbin/nologin
+</span></span><span style=display:flex><span>daemon:x:2:2:daemon:/:/sbin/nologin
+</span></span><span style=display:flex><span>adm:x:3:4:adm:/var/adm://nologin
+</span></span><span style=display:flex><span>lp:x:4:7:lp:/var/spool/lpd://nologin
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed &#39;s/(aa)|(bb)/!/&#39; afile        # 匹配到 aa 或者 bb 替换为 !，() 是分组</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># echo axyzb &gt; cfile</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed -r &#39;s/(a.*b)/\1:\1&#39; cfile     # \1 引用第一个分组的内容，\n 引用第 n 个分组的内容</span>
+</span></span><span style=display:flex><span>axyzb:axyzb
+</span></span></code></pre></div><p>其他动作：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># cat bfile</span>
+</span></span><span style=display:flex><span>b
+</span></span><span style=display:flex><span>a
+</span></span><span style=display:flex><span>aa
+</span></span><span style=display:flex><span>aaa
+</span></span><span style=display:flex><span>ab
+</span></span><span style=display:flex><span>abb
+</span></span><span style=display:flex><span>abbb
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed &#39;/ab/d&#39; bfile # 删除匹配到 ab 的行</span>
+</span></span><span style=display:flex><span>b
+</span></span><span style=display:flex><span>a
+</span></span><span style=display:flex><span>aa
+</span></span><span style=display:flex><span>aaa
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed &#39;/ab/d;s/a/!/&#39; bfile</span>
+</span></span><span style=display:flex><span>b
+</span></span><span style=display:flex><span>!
+</span></span><span style=display:flex><span>!a
+</span></span><span style=display:flex><span>!aa
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed &#39;/ab/d;=&#39; bfile # = 可以打印行号</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>b
+</span></span><span style=display:flex><span><span style=color:#ae81ff>2</span>
+</span></span><span style=display:flex><span>a
+</span></span><span style=display:flex><span><span style=color:#ae81ff>3</span>
+</span></span><span style=display:flex><span>aa
+</span></span><span style=display:flex><span><span style=color:#ae81ff>4</span>
+</span></span><span style=display:flex><span>aaa
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed &#39;/ab/i hello&#39; bfile # 匹配到 ab 的行上面插入 hello</span>
+</span></span><span style=display:flex><span>b
+</span></span><span style=display:flex><span>a
+</span></span><span style=display:flex><span>aa
+</span></span><span style=display:flex><span>aaa
+</span></span><span style=display:flex><span>hello
+</span></span><span style=display:flex><span>ab
+</span></span><span style=display:flex><span>hello
+</span></span><span style=display:flex><span>abb
+</span></span><span style=display:flex><span>hello
+</span></span><span style=display:flex><span>abbb
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed &#39;/ab/a hello&#39; bfile # 匹配到 ab 的行下面插入 hello</span>
+</span></span><span style=display:flex><span>b
+</span></span><span style=display:flex><span>a
+</span></span><span style=display:flex><span>aa
+</span></span><span style=display:flex><span>aaa
+</span></span><span style=display:flex><span>ab
+</span></span><span style=display:flex><span>hello
+</span></span><span style=display:flex><span>abb
+</span></span><span style=display:flex><span>hello
+</span></span><span style=display:flex><span>abbb
+</span></span><span style=display:flex><span>hello
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed &#39;/ab/c hello&#39; bfile # 匹配到 ab 的行改写为 hello</span>
+</span></span><span style=display:flex><span>b
+</span></span><span style=display:flex><span>a
+</span></span><span style=display:flex><span>aa
+</span></span><span style=display:flex><span>aaa
+</span></span><span style=display:flex><span>hello
+</span></span><span style=display:flex><span>hello
+</span></span><span style=display:flex><span>hello
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed &#39;/ab/r afile&#39; bfile # 把 afile 的内容插入到匹配到 ab 的行下面</span>
+</span></span><span style=display:flex><span>b
+</span></span><span style=display:flex><span>a
+</span></span><span style=display:flex><span>aa
+</span></span><span style=display:flex><span>aaa
+</span></span><span style=display:flex><span>ab
+</span></span><span style=display:flex><span>bb a a
+</span></span><span style=display:flex><span>abb
+</span></span><span style=display:flex><span>bb a a
+</span></span><span style=display:flex><span>abbb
+</span></span><span style=display:flex><span>bb a a
+</span></span></code></pre></div><h4 id=sed-多行模式>sed 多行模式
+<a class=anchor href=#sed-%e5%a4%9a%e8%a1%8c%e6%a8%a1%e5%bc%8f>#</a></h4><p>多行模式的处理命令：</p><ul><li><code>N</code>：将下一行加入到模式空间</li><li><code>D</code>：删除模式空间中的第一个字符到第一个换行符</li><li><code>P</code>：打印模式空间的第一个字符到第一个换行符</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># cat a.txt</span>
+</span></span><span style=display:flex><span>hel
+</span></span><span style=display:flex><span>lo
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed &#39;N&#39; a.txt  # 将下一行追加到模式空间</span>
+</span></span><span style=display:flex><span>hel
+</span></span><span style=display:flex><span>lo
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed &#39;N;s/hel\nlo/!!!/&#39; a.txt</span>
+</span></span><span style=display:flex><span>!!!
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed &#39;N;s/hel.lo/!!!/&#39; a.txt   # . 匹配任意字符</span>
+</span></span><span style=display:flex><span>!!!
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># cat &gt; b.txt &lt;&lt; EOF</span>
+</span></span><span style=display:flex><span>&gt; hell
+</span></span><span style=display:flex><span>&gt; o bash hel
+</span></span><span style=display:flex><span>&gt; lo bash
+</span></span><span style=display:flex><span>&gt; EOF
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># cat b.txt</span>
+</span></span><span style=display:flex><span>hell
+</span></span><span style=display:flex><span>o bash hel
+</span></span><span style=display:flex><span>lo bash
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># sed &#39;N;s/\n//;s/hello bash/hello sed\n/;P;D&#39; b.txt</span>
+</span></span><span style=display:flex><span>hello sed
+</span></span><span style=display:flex><span> hello sed
+</span></span></code></pre></div><h3 id=awk>awk
+<a class=anchor href=#awk>#</a></h3><p>awk 一般用于对文本内容进行统计，按需要的格式进行输出。一般是作为 sed 的一个补充。awk 可以看成是一种编程语言。</p><p>awk 和 sed 的区别：</p><ul><li>awk 用于比较规范的文本处理，用于统计数量并输出指定字段</li><li>sed 一般用于把不规范的文本处理为规范的文本</li></ul><p>awk 的流程控制：</p><ul><li>输入数据前例程 <code>BEGIN{}</code>，读入数据前执行，做一些预处理操作。</li><li>主输入循环 <code>{}</code>，处理读取的每一行。</li><li>所有文件读取完成例程 <code>END{}</code>，读取操作完成后执行，做一些数据汇总。</li></ul><p>常用的写法是只写主输入循环。</p><h4 id=记录和字段>记录和字段
+<a class=anchor href=#%e8%ae%b0%e5%bd%95%e5%92%8c%e5%ad%97%e6%ae%b5>#</a></h4><ul><li>每一行叫做 awk 的记录</li><li>使用空格、制表符分隔开的单词叫做字段</li><li>可以指定分隔的字段</li></ul><p>字段的引用：</p><ul><li>awk 中使用 <code>$1</code> <code>$2</code> &mldr; <code>$n</code> 表示每一个字段，<code>$0</code> 表示当前行，<code>awk '{print $1, $2, $3} filename'</code></li><li>awk 可以使用 <code>-F</code> 改变字段的分隔符，<code>awk -F ',' '{print $1, $2, $3}' filename</code>，分隔符可以使用正则表达式</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk &#39;/^menu/{ print $0 }&#39; /boot/grub2/grub.cfg # 打印以 menu 开头的行的，$0 表示当前行</span>
+</span></span><span style=display:flex><span>menuentry <span style=color:#e6db74>&#39;CentOS Linux (3.10.0-957.5.1.el7.x86_64) 7 (Core)&#39;</span> --class centos --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option <span style=color:#e6db74>&#39;gnulinux-3.10.0-957.el7.x86_64-advanced-9c9da9f8-f77a-4a9a-99e0-e4f238472355&#39;</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>menuentry <span style=color:#e6db74>&#39;CentOS Linux (3.10.0-957.el7.x86_64) 7 (Core)&#39;</span> --class centos --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option <span style=color:#e6db74>&#39;gnulinux-3.10.0-957.el7.x86_64-advanced-9c9da9f8-f77a-4a9a-99e0-e4f238472355&#39;</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>menuentry <span style=color:#e6db74>&#39;CentOS Linux (0-rescue-87b376b725324ec5aaba8f92806dbc8c) 7 (Core)&#39;</span> --class centos --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option <span style=color:#e6db74>&#39;gnulinux-0-rescue-87b376b725324ec5aaba8f92806dbc8c-advanced-9c9da9f8-f77a-4a9a-99e0-e4f238472355&#39;</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk -F &#34;&#39;&#34; &#39;/^menu/{ print $2 }&#39; /boot/grub2/grub.cfg  # 以单引号为分隔符</span>
+</span></span><span style=display:flex><span>CentOS Linux <span style=color:#f92672>(</span>3.10.0-957.5.1.el7.x86_64<span style=color:#f92672>)</span> <span style=color:#ae81ff>7</span> <span style=color:#f92672>(</span>Core<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>CentOS Linux <span style=color:#f92672>(</span>3.10.0-957.el7.x86_64<span style=color:#f92672>)</span> <span style=color:#ae81ff>7</span> <span style=color:#f92672>(</span>Core<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>CentOS Linux <span style=color:#f92672>(</span>0-rescue-87b376b725324ec5aaba8f92806dbc8c<span style=color:#f92672>)</span> <span style=color:#ae81ff>7</span> <span style=color:#f92672>(</span>Core<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk -F &#34;&#39;&#34; &#39;/^menu/{ print $1 }&#39; /boot/grub2/grub.cfg</span>
+</span></span><span style=display:flex><span>menuentry
+</span></span><span style=display:flex><span>menuentry
+</span></span><span style=display:flex><span>menuentry
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk -F &#34;&#39;&#34; &#39;/^menu/{ print x++,$2 }&#39; /boot/grub2/grub.cfg # 使用运算符，显示序号，x 变量没有定义，默认为 0</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>0</span> CentOS Linux <span style=color:#f92672>(</span>3.10.0-957.5.1.el7.x86_64<span style=color:#f92672>)</span> <span style=color:#ae81ff>7</span> <span style=color:#f92672>(</span>Core<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>1</span> CentOS Linux <span style=color:#f92672>(</span>3.10.0-957.el7.x86_64<span style=color:#f92672>)</span> <span style=color:#ae81ff>7</span> <span style=color:#f92672>(</span>Core<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>2</span> CentOS Linux <span style=color:#f92672>(</span>0-rescue-87b376b725324ec5aaba8f92806dbc8c<span style=color:#f92672>)</span> <span style=color:#ae81ff>7</span> <span style=color:#f92672>(</span>Core<span style=color:#f92672>)</span>
+</span></span></code></pre></div><h4 id=表达式>表达式
+<a class=anchor href=#%e8%a1%a8%e8%be%be%e5%bc%8f>#</a></h4><p>赋值操作符：</p><ul><li><code>=</code>，<code>var1 = "name"</code>，<code>var2 = $1</code></li><li><code>++</code> <code>--</code> <code>+=</code> <code>-=</code> <code>*=</code> <code>/+</code> <code>%=</code> <code>^=</code></li></ul><p>算数操作符：</p><ul><li><code>+</code> <code>-</code> <code>*</code> <code>/</code> <code>%</code> <code>^</code></li></ul><p>系统变量：</p><ul><li><code>FS</code> 字段分隔符，默认是空格和制表符。</li><li><code>RS</code> 行分隔符，用于分割每一行，默认是换行符。</li><li><code>OFS</code> 输出的字段分隔符，用于打印时分隔字段，默认为空格。</li><li><code>ORS</code> 输出行分隔符，用于打印时分隔记录，默认为换行符。</li><li><code>NR</code> 表示当前处理的是第几行。</li><li><code>FNR</code> 行数。</li><li><code>NF</code> 字段数量，所以最后一个字段内容可以用 <code>$NF</code> 取出，<code>$(NF-1)</code> 代表倒数第二个字段。</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># head -5 /etc/passwd | awk &#39;BEGIN{FS=&#34;:&#34;}{print $1}&#39;   # BEGIN{FS=&#34;:&#34;} 表示在读入之前设置字段分隔符为 :，也可以写成 awk -F &#34;:&#34; &#39;{print $1}&#39;</span>
+</span></span><span style=display:flex><span>root
+</span></span><span style=display:flex><span>bin
+</span></span><span style=display:flex><span>daemon
+</span></span><span style=display:flex><span>adm
+</span></span><span style=display:flex><span>lp
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># head -5 /etc/passwd | awk &#39;BEGIN{FS=&#34;:&#34;}{print $1,$2}&#39;</span>
+</span></span><span style=display:flex><span>root x          <span style=color:#75715e># 可以看出输出的字段分隔符默认为空格</span>
+</span></span><span style=display:flex><span>bin x
+</span></span><span style=display:flex><span>daemon x
+</span></span><span style=display:flex><span>adm x
+</span></span><span style=display:flex><span>lp x
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># head -5 /etc/passwd | awk &#39;BEGIN{FS=&#34;:&#34;;OFS=&#34;-&#34;}{print $1,$2}&#39;   # 输出的字段分隔符设置为 -</span>
+</span></span><span style=display:flex><span>root-x
+</span></span><span style=display:flex><span>bin-x
+</span></span><span style=display:flex><span>daemon-x
+</span></span><span style=display:flex><span>adm-x
+</span></span><span style=display:flex><span>lp-x
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># head -5 /etc/passwd | awk &#39;BEGIN{RS=&#34;:&#34;}{print $0}&#39;   # 已 : 为行分隔符，输出每一行</span>
+</span></span><span style=display:flex><span>root
+</span></span><span style=display:flex><span>x
+</span></span><span style=display:flex><span><span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>root
+</span></span><span style=display:flex><span>/root
+</span></span><span style=display:flex><span>/bin/bash
+</span></span><span style=display:flex><span>bin
+</span></span><span style=display:flex><span>x
+</span></span><span style=display:flex><span><span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>bin
+</span></span><span style=display:flex><span>/bin
+</span></span><span style=display:flex><span>/sbin/nologin
+</span></span><span style=display:flex><span>daemon
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># head -5 /etc/passwd | awk &#39;{print NR}&#39;   # 显示行号</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>2</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>3</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>4</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>5</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># head -5 /etc/passwd | awk &#39;{print NR, $0}&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>1</span> root:x:0:0:root:/root:/bin/bash
+</span></span><span style=display:flex><span><span style=color:#ae81ff>2</span> bin:x:1:1:bin:/bin:/sbin/nologin
+</span></span><span style=display:flex><span><span style=color:#ae81ff>3</span> daemon:x:2:2:daemon:/sbin:/sbin/nologin
+</span></span><span style=display:flex><span><span style=color:#ae81ff>4</span> adm:x:3:4:adm:/var/adm:/sbin/nologin
+</span></span><span style=display:flex><span><span style=color:#ae81ff>5</span> lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk &#39;{print FNR, $0}&#39; /etc/hosts /etc/hosts    # FNR 会重排行号</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>1</span> 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+</span></span><span style=display:flex><span><span style=color:#ae81ff>2</span> <span style=color:#75715e>#::1         localhost localhost.localdomain localhost6 localhost6.localdomain6</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>3</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>4</span> 16.187.191.150 SGDLITVM0905.hpeswlab.net SGDLITVM0905
+</span></span><span style=display:flex><span><span style=color:#ae81ff>1</span> 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+</span></span><span style=display:flex><span><span style=color:#ae81ff>2</span> <span style=color:#75715e>#::1         localhost localhost.localdomain localhost6 localhost6.localdomain6</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>3</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>4</span> 16.187.191.150 SGDLITVM0905.hpeswlab.net SGDLITVM0905
+</span></span><span style=display:flex><span>You have new mail in /var/spool/mail/root
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk &#39;{print NR, $0}&#39; /etc/hosts /etc/hosts   # FNR 不会重排行号</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>1</span> 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+</span></span><span style=display:flex><span><span style=color:#ae81ff>2</span> <span style=color:#75715e>#::1         localhost localhost.localdomain localhost6 localhost6.localdomain6</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>3</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>4</span> 16.187.191.150 SGDLITVM0905.hpeswlab.net SGDLITVM0905
+</span></span><span style=display:flex><span><span style=color:#ae81ff>5</span> 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+</span></span><span style=display:flex><span><span style=color:#ae81ff>6</span> <span style=color:#75715e>#::1         localhost localhost.localdomain localhost6 localhost6.localdomain6</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>7</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>8</span> 16.187.191.150 SGDLITVM0905.hpeswlab.net SGDLITVM0905
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># head -5 /etc/passwd | awk &#39;BEGIN{FS=&#34;:&#34;}{print NF}&#39;  # NF 输出字段数量</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>7</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>7</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>7</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>7</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>7</span>
+</span></span><span style=display:flex><span>You have new mail in /var/spool/mail/root
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># head -5 /etc/passwd | awk &#39;BEGIN{FS=&#34;:&#34;}{print $NF}&#39; # $NF 就可以获取到最后一个字段的内容</span>
+</span></span><span style=display:flex><span>/bin/bash
+</span></span><span style=display:flex><span>/sbin/nologin
+</span></span><span style=display:flex><span>/sbin/nologin
+</span></span><span style=display:flex><span>/sbin/nologin
+</span></span><span style=display:flex><span>/sbin/nologin
+</span></span></code></pre></div><p>关系操作符：</p><ul><li><code>&lt;</code> <code>></code> <code>&lt;=</code> <code>>=</code> <code>==</code> <code>!=</code> <code>~</code> <code>!~</code></li></ul><p>布尔操作符：</p><ul><li><code>&&</code> <code>||</code> <code>!</code></li></ul><p>条件语句：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#66d9ef>if</span> <span style=color:#f92672>(</span>表达式<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>  awk 语句1
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span> <span style=color:#66d9ef>else</span>
+</span></span><span style=display:flex><span>  awk 语句2
+</span></span><span style=display:flex><span><span style=color:#f92672>]</span>  
+</span></span></code></pre></div><p>多个语句可以使用 <code>{}</code> 括起来。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># cat score.txt</span>
+</span></span><span style=display:flex><span>user1 <span style=color:#ae81ff>60</span> <span style=color:#ae81ff>61</span> <span style=color:#ae81ff>62</span> <span style=color:#ae81ff>63</span> <span style=color:#ae81ff>64</span> <span style=color:#ae81ff>65</span>
+</span></span><span style=display:flex><span>user2 <span style=color:#ae81ff>70</span> <span style=color:#ae81ff>71</span> <span style=color:#ae81ff>72</span> <span style=color:#ae81ff>73</span> <span style=color:#ae81ff>74</span> <span style=color:#ae81ff>75</span>
+</span></span><span style=display:flex><span>user3 <span style=color:#ae81ff>80</span> <span style=color:#ae81ff>81</span> <span style=color:#ae81ff>82</span> <span style=color:#ae81ff>83</span> <span style=color:#ae81ff>84</span> <span style=color:#ae81ff>85</span>
+</span></span><span style=display:flex><span>user4 <span style=color:#ae81ff>90</span> <span style=color:#ae81ff>91</span> <span style=color:#ae81ff>92</span> <span style=color:#ae81ff>93</span> <span style=color:#ae81ff>94</span> <span style=color:#ae81ff>95</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk &#39;{if($2&gt;=80) print $1}&#39; score.txt</span>
+</span></span><span style=display:flex><span>user3
+</span></span><span style=display:flex><span>user4
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk &#39;{if($2&gt;=80) print $1; print $2}&#39; score.txt # 这种写法会把所有的第二个字段输出</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>60</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>70</span>
+</span></span><span style=display:flex><span>user3
+</span></span><span style=display:flex><span><span style=color:#ae81ff>80</span>
+</span></span><span style=display:flex><span>user4
+</span></span><span style=display:flex><span><span style=color:#ae81ff>90</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk &#39;{if($2&gt;=80) {print $1; print $2} }&#39; score.txt # 如果想一起输出要加上 {} ，多个语句一起执行</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>60</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>70</span>
+</span></span><span style=display:flex><span>user3
+</span></span><span style=display:flex><span><span style=color:#ae81ff>80</span>
+</span></span><span style=display:flex><span>user4
+</span></span><span style=display:flex><span><span style=color:#ae81ff>90</span>
+</span></span></code></pre></div><p><code>while</code> 循环：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#66d9ef>while</span><span style=color:#f92672>(</span>表达式<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>  awk 语句1
+</span></span></code></pre></div><p><code>do</code> 循环：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#66d9ef>do</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>  awk 语句1
+</span></span><span style=display:flex><span><span style=color:#f92672>}</span><span style=color:#66d9ef>while</span><span style=color:#f92672>(</span>表达式<span style=color:#f92672>)</span>
+</span></span></code></pre></div><p><code>for</code> 循环：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#66d9ef>for</span><span style=color:#f92672>(</span>初始值;判断条件;累加<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>  awk 语句1
+</span></span></code></pre></div><p>可以使用 <code>break</code> 和 <code>continue</code>。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># cat score.txt</span>
+</span></span><span style=display:flex><span>user1 <span style=color:#ae81ff>60</span> <span style=color:#ae81ff>61</span> <span style=color:#ae81ff>62</span> <span style=color:#ae81ff>63</span> <span style=color:#ae81ff>64</span> <span style=color:#ae81ff>65</span>
+</span></span><span style=display:flex><span>user2 <span style=color:#ae81ff>70</span> <span style=color:#ae81ff>71</span> <span style=color:#ae81ff>72</span> <span style=color:#ae81ff>73</span> <span style=color:#ae81ff>74</span> <span style=color:#ae81ff>75</span>
+</span></span><span style=display:flex><span>user3 <span style=color:#ae81ff>80</span> <span style=color:#ae81ff>81</span> <span style=color:#ae81ff>82</span> <span style=color:#ae81ff>83</span> <span style=color:#ae81ff>84</span> <span style=color:#ae81ff>85</span>
+</span></span><span style=display:flex><span>user4 <span style=color:#ae81ff>90</span> <span style=color:#ae81ff>91</span> <span style=color:#ae81ff>92</span> <span style=color:#ae81ff>93</span> <span style=color:#ae81ff>94</span> <span style=color:#ae81ff>95</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># head -1 score.txt</span>
+</span></span><span style=display:flex><span>user1 <span style=color:#ae81ff>60</span> <span style=color:#ae81ff>61</span> <span style=color:#ae81ff>62</span> <span style=color:#ae81ff>63</span> <span style=color:#ae81ff>64</span> <span style=color:#ae81ff>65</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># head -1 score.txt | awk &#39;for(c=2;c&lt;=NF;c++) print c&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>2</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>3</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>4</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>5</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>6</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>7</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># head -1 score.txt | awk &#39;for(c=2;c&lt;=NF;c++) print $c&#39; # 输出值</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>61</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>62</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>63</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>64</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>65</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># head -1 score.txt | awk &#39;for(c=2;c&lt;=NF;c++) print $c&#39; # 输出值</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>61</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>62</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>63</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>64</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>65</span>
+</span></span></code></pre></div><p>数组：</p><ul><li><code>数组[下标] = 值</code>，初始化数组。下标可以是数字，也可以是字符串。</li><li><code>for (变量 in 数组)</code>，<code>数组[变量]</code> 获取数组元素</li><li><code>delete 数组[下标]</code> 删除数组元素</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># cat score.txt</span>
+</span></span><span style=display:flex><span>user1 <span style=color:#ae81ff>60</span> <span style=color:#ae81ff>61</span> <span style=color:#ae81ff>62</span> <span style=color:#ae81ff>63</span> <span style=color:#ae81ff>64</span> <span style=color:#ae81ff>65</span>
+</span></span><span style=display:flex><span>user2 <span style=color:#ae81ff>70</span> <span style=color:#ae81ff>71</span> <span style=color:#ae81ff>72</span> <span style=color:#ae81ff>73</span> <span style=color:#ae81ff>74</span> <span style=color:#ae81ff>75</span>
+</span></span><span style=display:flex><span>user3 <span style=color:#ae81ff>80</span> <span style=color:#ae81ff>81</span> <span style=color:#ae81ff>82</span> <span style=color:#ae81ff>83</span> <span style=color:#ae81ff>84</span> <span style=color:#ae81ff>85</span>
+</span></span><span style=display:flex><span>user4 <span style=color:#ae81ff>90</span> <span style=color:#ae81ff>91</span> <span style=color:#ae81ff>92</span> <span style=color:#ae81ff>93</span> <span style=color:#ae81ff>94</span> <span style=color:#ae81ff>95</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk &#39;{ sum=0; for(column=2;column&lt;=NF;column++) sum+=$column; print sum }&#39; score.txt # 计算每个人的总分</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>375</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>435</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>495</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>555</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># [root@SGDLITVM0905 ~]# awk &#39;{ sum=0; for(column=2;column&lt;=NF;column++) sum+=$column; avg[$1]=sum/(NF-1); }END{ for( user in avg) print user, avg[user]}&#39; score.txt  # 计算每个人的平均分 并在 END 例程中格式化输出</span>
+</span></span><span style=display:flex><span>user1 62.5
+</span></span><span style=display:flex><span>user2 72.5
+</span></span><span style=display:flex><span>user3 82.5
+</span></span><span style=display:flex><span>user4 92.5
+</span></span></code></pre></div><p>awk 脚本可以保存到文件：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk -f avg.awk score.txt</span>
+</span></span><span style=display:flex><span>user1 62.5
+</span></span><span style=display:flex><span>user2 72.5
+</span></span><span style=display:flex><span>user3 82.5
+</span></span><span style=display:flex><span>user4 92.5
+</span></span></code></pre></div><ul><li><code>-f</code> 加载 awk 文件</li><li><code>avg.awk</code> 文件的内容：<code>{ sum=0; for(column=2;column&lt;=NF;column++) sum+=$column; avg[$1]=sum/(NF-1); }END{ for( user in avg) print user, avg[user]}</code>。</li></ul><p>命令行参数数组：</p><ul><li><code>ARGC</code> 命令行参数数组的长度</li><li><code>ARGV</code> 命令行参数数组</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># cat arg.awk</span>
+</span></span><span style=display:flex><span>BEGIN<span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>for</span><span style=color:#f92672>(</span>x<span style=color:#f92672>=</span>0;x&lt;ARGC;x++<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>    print ARGV<span style=color:#f92672>[</span>x<span style=color:#f92672>]</span>
+</span></span><span style=display:flex><span>  print ARGC
+</span></span><span style=display:flex><span><span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk -f arg.awk</span>
+</span></span><span style=display:flex><span>awk
+</span></span><span style=display:flex><span><span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk -f arg.awk 11 22 33</span>
+</span></span><span style=display:flex><span>awk
+</span></span><span style=display:flex><span><span style=color:#ae81ff>11</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>22</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>33</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>4</span>
+</span></span></code></pre></div><p><code>ARGV[0]</code> 就是命令本身。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># cat avg.awk</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>  sum <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>for</span> <span style=color:#f92672>(</span> c <span style=color:#f92672>=</span> 2; c &lt;<span style=color:#f92672>=</span> NF; c++ <span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>    sum <span style=color:#f92672>+=</span> $c
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  avg<span style=color:#f92672>[</span>$1<span style=color:#f92672>]</span> <span style=color:#f92672>=</span> sum / <span style=color:#f92672>(</span> NF-1 <span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>  print $1, avg<span style=color:#f92672>[</span>$1<span style=color:#f92672>]</span>
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>END<span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>for</span> <span style=color:#f92672>(</span> usr in avg<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>    sum_all <span style=color:#f92672>+=</span> avg<span style=color:#f92672>[</span>user<span style=color:#f92672>]</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  avg_all <span style=color:#f92672>=</span> sum_all / NR
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>for</span> <span style=color:#f92672>(</span> user in avg <span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#f92672>(</span> avg<span style=color:#f92672>[</span>user<span style=color:#f92672>]</span> &gt; avg_all <span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>      above++
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>else</span>
+</span></span><span style=display:flex><span>      below++
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  print <span style=color:#e6db74>&#34;above&#34;</span>, above
+</span></span><span style=display:flex><span>  print <span style=color:#e6db74>&#34;below&#34;</span>, below
+</span></span><span style=display:flex><span>  
+</span></span><span style=display:flex><span><span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk -f avg.awk score.txt</span>
+</span></span><span style=display:flex><span>user1 62.5
+</span></span><span style=display:flex><span>user2 72.5
+</span></span><span style=display:flex><span>user3 82.5
+</span></span><span style=display:flex><span>user4 92.5
+</span></span><span style=display:flex><span>above <span style=color:#ae81ff>4</span>
+</span></span><span style=display:flex><span>below <span style=color:#ae81ff>1</span>
+</span></span></code></pre></div><p>awk 函数：</p><ul><li>算数函数<ul><li><code>sin()</code> <code>cos()</code> <code>int()</code> <code>rand()</code> <code>srand()</code></li></ul></li><li>字符串函数<ul><li><code>toupper(s)</code> <code>tolower(s)</code> <code>length(s)</code> <code>split(s,a,sep)</code> <code>match(s,r)</code> <code>substr(s,p,n)</code></li></ul></li><li>自定义函数，自定义函数一定要写在 <code>BEGIN</code> 主循环 <code>END</code> 例程的外面</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#66d9ef>function</span> 函数名 <span style=color:#f92672>(</span> 参数 <span style=color:#f92672>)</span> <span style=color:#f92672>{</span>
+</span></span><span style=display:flex><span>  awk 语句
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>return</span> awk 变量
+</span></span><span style=display:flex><span><span style=color:#f92672>}</span>
+</span></span></code></pre></div><p>示例：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk &#39;BEGIN{pi=3.14; print int(pi)}&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>3</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk &#39;BEGIN{print rand()}&#39;   # 这是一个伪随机数</span>
+</span></span><span style=display:flex><span>0.237788
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk &#39;BEGIN{print rand()}&#39;</span>
+</span></span><span style=display:flex><span>0.237788
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk &#39;BEGIN{print rand()}&#39;</span>
+</span></span><span style=display:flex><span>0.237788
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk &#39;BEGIN{srand();print rand()}&#39;   # srand 会重新获取种子。范围是 0 ~ 1</span>
+</span></span><span style=display:flex><span>0.960391
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk &#39;BEGIN{srand();print rand()}&#39;</span>
+</span></span><span style=display:flex><span>0.0422737
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk &#39;BEGIN{srand();print rand()}&#39;</span>
+</span></span><span style=display:flex><span>0.555768
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk &#39;function a() { return 0 } BEGIN{ print a()}&#39;</span>
+</span></span><span style=display:flex><span><span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@SGDLITVM0905 ~<span style=color:#f92672>]</span><span style=color:#75715e># awk &#39;function double(str) { return str str } BEGIN{ print double(&#34;hello&#34;)}&#39;</span>
+</span></span><span style=display:flex><span>hellohello
+</span></span></code></pre></div></article><footer class=book-footer><div class="flex flex-wrap justify-between"><div><a class="flex align-center" href=https://github.com/shipengqi/os-learn/commit/4f49c8bc26ad1442af2b9f5753687f18dc226c1a title='Last modified by shipengqi | November 15, 2023' target=_blank rel=noopener><img src=/os-learn/svg/calendar.svg class=book-icon alt=Calendar>
+<span>November 15, 2023</span></a></div><div><a class="flex align-center" href=https://github.com/shipengqi/os-learn/edit/master/content/docs/commands/16_text_operation.md target=_blank rel=noopener><img src=/os-learn/svg/edit.svg class=book-icon alt=Edit>
+<span>Edit this page</span></a></div></div><script>(function(){function e(e){const t=window.getSelection(),n=document.createRange();n.selectNodeContents(e),t.removeAllRanges(),t.addRange(n)}document.querySelectorAll("pre code").forEach(t=>{t.addEventListener("click",function(){if(window.getSelection().toString())return;e(t.parentElement),navigator.clipboard&&navigator.clipboard.writeText(t.parentElement.textContent)})})})()</script></footer><div class=book-comments></div><label for=menu-control class="hidden book-menu-overlay"></label></div><aside class=book-toc><div class=book-toc-content><nav id=TableOfContents><ul><li><a href=#操作文本>操作文本</a><ul><li><a href=#元字符>元字符</a></li><li><a href=#grep>grep</a></li><li><a href=#find>find</a></li><li><a href=#sed-和-awk>sed 和 awk</a><ul><li><a href=#sed>sed</a></li><li><a href=#awk>awk</a></li></ul></li></ul></li></ul></nav></div></aside></main></body></html>

@@ -1,0 +1,242 @@
+<!doctype html><html lang=en dir=ltr><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="防火墙 # 防火墙分为两类：
+软件防火墙，CentOS 6 的默认防火墙是 iptables，CentOS 7 的默认防火墙是 firewalld，底层都是使用内核中的 netfilter。 包过滤防火墙，主要用于数据包的过滤，数据包转发。 应用层防火墙，可以控制应用程序的具体的行为。 硬件防火墙 iptables # iptables的结构：
+iptables -> Tables -> Chains -> Rules tables 由 chains 组成，而 chains 又由 rules 组成。
+表（tables）提供特定的功能，iptables 包含四个规则表：
+filter 包过滤 nat 网络地址转换 mangle 包重构(修改) raw 数据跟踪处理 链（chains）是数据包传播的路径，每一条链其实就是众多规则中的一个检查清单，每一条链中可以有一条或数条规则。
+当一个数据包到达一个链时，iptables 就会从链中第一条规则开始检查，看该数据包是否满足规则所定义的条件。如果满足，系统就会根据该条规则所定义的方法处理该数据包； 否则 iptables 将继续检查下一条规则，如果该数据包不符合链中任一条规则，iptables 就会根据该链预先定义的默认策略来处理数据包。
+iptables 的规则链：
+INPUT 接收的的数据包使用此规则链中的策略 OUTPUT 发送的数据包使用此规则链中的策略 FORWARD 转发数据包时使用此规则链中的策略 PREROUTING 目的地址转换 POSTROUTING 源地址转换 iptables [-t 表] 命令选项 [规则链] 规则，-t 默认使用的是 filter。"><meta name=theme-color media="(prefers-color-scheme: light)" content="#ffffff"><meta name=theme-color media="(prefers-color-scheme: dark)" content="#343a40"><meta name=color-scheme content="light dark"><meta property="og:title" content="防火墙"><meta property="og:description" content="防火墙 # 防火墙分为两类：
+软件防火墙，CentOS 6 的默认防火墙是 iptables，CentOS 7 的默认防火墙是 firewalld，底层都是使用内核中的 netfilter。 包过滤防火墙，主要用于数据包的过滤，数据包转发。 应用层防火墙，可以控制应用程序的具体的行为。 硬件防火墙 iptables # iptables的结构：
+iptables -> Tables -> Chains -> Rules tables 由 chains 组成，而 chains 又由 rules 组成。
+表（tables）提供特定的功能，iptables 包含四个规则表：
+filter 包过滤 nat 网络地址转换 mangle 包重构(修改) raw 数据跟踪处理 链（chains）是数据包传播的路径，每一条链其实就是众多规则中的一个检查清单，每一条链中可以有一条或数条规则。
+当一个数据包到达一个链时，iptables 就会从链中第一条规则开始检查，看该数据包是否满足规则所定义的条件。如果满足，系统就会根据该条规则所定义的方法处理该数据包； 否则 iptables 将继续检查下一条规则，如果该数据包不符合链中任一条规则，iptables 就会根据该链预先定义的默认策略来处理数据包。
+iptables 的规则链：
+INPUT 接收的的数据包使用此规则链中的策略 OUTPUT 发送的数据包使用此规则链中的策略 FORWARD 转发数据包时使用此规则链中的策略 PREROUTING 目的地址转换 POSTROUTING 源地址转换 iptables [-t 表] 命令选项 [规则链] 规则，-t 默认使用的是 filter。"><meta property="og:type" content="article"><meta property="og:url" content="http://shipengqi.github.io/os-learn/docs/commands/17_firewall/"><meta property="article:section" content="docs"><meta property="article:modified_time" content="2023-11-15T17:26:03+08:00"><title>防火墙 | OS Learning</title><link rel=manifest href=/os-learn/manifest.json><link rel=icon href=/os-learn/favicon.png><link rel=stylesheet href=/os-learn/book.min.33a48f5432973b8ff9a82679d9e45d67f2c15d4399bd2829269455cfe390b5e8.css integrity="sha256-M6SPVDKXO4/5qCZ52eRdZ/LBXUOZvSgpJpRVz+OQteg=" crossorigin=anonymous><script defer src=/os-learn/flexsearch.min.js></script>
+<script defer src=/os-learn/en.search.min.9da2651f3362f085ba92fedcac79d3065ce93b32c3817feded7d23b6337f4ee9.js integrity="sha256-naJlHzNi8IW6kv7crHnTBlzpOzLDgX/t7X0jtjN/Tuk=" crossorigin=anonymous></script>
+<script defer src=/os-learn/sw.min.73e4e12d3b3ff9b5bd6410a479234d8908ebac0e4d11ef31f508715b8e7f7c7d.js integrity="sha256-c+ThLTs/+bW9ZBCkeSNNiQjrrA5NEe8x9QhxW45/fH0=" crossorigin=anonymous></script></head><body dir=ltr><input type=checkbox class="hidden toggle" id=menu-control>
+<input type=checkbox class="hidden toggle" id=toc-control><main class="container flex"><aside class=book-menu><div class=book-menu-content><nav><h2 class=book-brand><a class="flex align-center" href=/os-learn/><span>OS Learning</span></a></h2><div class=book-search><input type=text id=book-search-input placeholder=Search aria-label=Search maxlength=64 data-hotkeys=s/><div class="book-search-spinner hidden"></div><ul id=book-search-results></ul></div><ul><li><a href=https://shipengqi.github.io/ target=_blank rel=noopener>Blog</a></li><li><a href=https://github.com/shipengqi/os-learn target=_blank rel=noopener>Github</a></li></ul><ul><li><span>Linux 常用命令</span><ul><li><a href=/os-learn/docs/commands/01_view_text/>查看文件内容</a></li><li><a href=/os-learn/docs/commands/02_tar/>打包压缩</a></li><li><a href=/os-learn/docs/commands/03_vim/>Vim</a></li><li><a href=/os-learn/docs/commands/04_user_manage/>用户管理</a></li><li><a href=/os-learn/docs/commands/05_file_perm/>文件权限</a></li><li><a href=/os-learn/docs/commands/06_network/>网络管理</a></li><li><a href=/os-learn/docs/commands/07_package_manage/>包管理器</a></li><li><a href=/os-learn/docs/commands/08_grup/>grup</a></li><li><a href=/os-learn/docs/commands/09_process/>进程管理</a></li><li><a href=/os-learn/docs/commands/10_systemd/>systemctl</a></li><li><a href=/os-learn/docs/commands/11_selinux/>SELinux</a></li><li><a href=/os-learn/docs/commands/12_mem_disk/>内存和磁盘</a></li><li><a href=/os-learn/docs/commands/13_sar/>查看系统状态</a></li><li><a href=/os-learn/docs/commands/14_shell/>Shell</a></li><li><a href=/os-learn/docs/commands/15_script_priority/>脚本控制</a></li><li><a href=/os-learn/docs/commands/16_text_operation/>操作文本</a></li><li><a href=/os-learn/docs/commands/17_firewall/ class=active>防火墙</a></li><li><a href=/os-learn/docs/commands/18_ssh/>SSH</a></li><li><a href=/os-learn/docs/commands/19_ftp/>FTP</a></li><li><a href=/os-learn/docs/commands/20_nfs/>NFS</a></li><li><a href=/os-learn/docs/commands/21_dns/>DNS</a></li><li><a href=/os-learn/docs/commands/22_kernel_upgrade/>内核升级</a></li><li><a href=/os-learn/docs/commands/23_pty_tty/>pty</a></li></ul></li></ul></nav><script>(function(){var e=document.querySelector("aside .book-menu-content");addEventListener("beforeunload",function(){localStorage.setItem("menu.scrollTop",e.scrollTop)}),e.scrollTop=localStorage.getItem("menu.scrollTop")})()</script></div></aside><div class=book-page><header class=book-header><div class="flex align-center justify-between"><label for=menu-control><img src=/os-learn/svg/menu.svg class=book-icon alt=Menu></label>
+<strong>防火墙</strong>
+<label for=toc-control><img src=/os-learn/svg/toc.svg class=book-icon alt="Table of Contents"></label></div><aside class="hidden clearfix"><nav id=TableOfContents><ul><li><a href=#防火墙>防火墙</a><ul><li><a href=#iptables>iptables</a><ul><li><a href=#iptables-配置文件>iptables 配置文件</a></li></ul></li><li><a href=#firewalld>firewalld</a><ul><li><a href=#添加规则>添加规则</a></li><li><a href=#配置文件>配置文件</a></li></ul></li></ul></li></ul></nav></aside></header><article class=markdown><h1 id=防火墙>防火墙
+<a class=anchor href=#%e9%98%b2%e7%81%ab%e5%a2%99>#</a></h1><p>防火墙分为两类：</p><ul><li>软件防火墙，CentOS 6 的默认防火墙是 iptables，CentOS 7 的默认防火墙是 firewalld，底层都是使用内核中的 netfilter。<ul><li>包过滤防火墙，主要用于数据包的过滤，数据包转发。</li><li>应用层防火墙，可以控制应用程序的具体的行为。</li></ul></li><li>硬件防火墙</li></ul><h2 id=iptables>iptables
+<a class=anchor href=#iptables>#</a></h2><p>iptables的结构：</p><pre tabindex=0><code>iptables -&gt; Tables -&gt; Chains -&gt; Rules
+</code></pre><p>tables 由 chains 组成，而 chains 又由 rules 组成。</p><p>表（tables）提供特定的功能，iptables 包含四个规则表：</p><ul><li><code>filter</code> 包过滤</li><li><code>nat</code> 网络地址转换</li><li><code>mangle</code> 包重构(修改)</li><li><code>raw</code> 数据跟踪处理</li></ul><p>链（chains）是数据包传播的路径，每一条链其实就是众多规则中的一个检查清单，每一条链中可以有一条或数条规则。</p><p><strong>当一个数据包到达一个链时，iptables 就会从链中第一条规则开始检查，看该数据包是否满足规则所定义的条件。如果满足，系统就会根据该条规则所定义的方法处理该数据包</strong>；
+<strong>否则 iptables 将继续检查下一条规则，如果该数据包不符合链中任一条规则，iptables 就会根据该链预先定义的默认策略来处理数据包</strong>。</p><p>iptables 的规则链：</p><ul><li><code>INPUT</code> 接收的的数据包使用此规则链中的策略</li><li><code>OUTPUT</code> 发送的数据包使用此规则链中的策略</li><li><code>FORWARD</code> 转发数据包时使用此规则链中的策略</li><li><code>PREROUTING</code> 目的地址转换</li><li><code>POSTROUTING</code> 源地址转换</li></ul><p><code>iptables [-t 表] 命令选项 [规则链] 规则</code>，<strong><code>-t</code> 默认使用的是 <code>filter</code></strong>。</p><p>命令选项用于指定管理 iptables 规则的方式（比如：插入、增加、删除、查看）。</p><p>命令选项：</p><ul><li><code>-L</code> 列出（list）指定链中所有的规则进行查看</li><li><code>-A</code> 在指定链的末尾添加（append）一条新的规则</li><li><code>-I</code> 在指定链中插入（insert）一条新的规则，默认在第一行添加</li><li><code>-D</code> 删除（delete）指定链中的某一条规则，可以按规则序号和内容删除，<code>iptables -D INPUT 1</code></li><li><code>-F</code> 清空（flush），<code>iptables -F</code> 清楚 <code>filter</code> 的规则</li><li><code>-P</code> 设置指定链的默认策略（policy），<code>iptables -P INPUT DROP</code></li><li><code>-N</code> 新建（new-chain）一条用户自己定义的规则链</li><li><code>-X</code> 删除指定表中用户自定义的规则链（delete-chain）</li><li><code>-E</code> 重命名用户定义的链，不改变链本身</li><li><code>-n</code> 直接使用，不解析域名</li><li><code>-v</code> 查看规则表详细信息</li></ul><p>规则选项：</p><ul><li><code>-i</code> 输入网口</li><li><code>-o</code> 输出网口</li><li><code>-p proto</code> 匹配网络协议：tcp、udp、icmp</li><li><code>--icmp-type type</code> 匹配 ICMP 类型，和 <code>-p icmp</code> 配合使用。注意有两根短划线</li><li><code>-s source-ip</code> 匹配来源主机（或网络）的IP地址</li><li><code>--sport port</code> 匹配来源主机的端口，和 <code>-s source-ip</code> 配合使用。</li><li><code>-d dest-ip</code> 匹配目标主机的 IP 地址</li><li><code>--dport port</code> 匹配目标主机（或网络）的端口，和 <code>-d dest-ip</code> 配合使用。</li></ul><p>数据包控制方式：</p><ul><li>ACCEPT: 允许数据包通过</li><li>DROP: 直接丢弃数据包，不给出任何回应信息</li><li>REJECT: 拒绝数据包通过，必须时会给数据发送端一个响应信息</li><li>LOG: 日志功能，在 <code>/var/log/messages</code> 文件中记录日志信息，然后将数据包传递给下一条规则</li><li>REDIRECT: 将数据包重新转向到本机或另一台主机的某一个端口，通常功能实现透明代理或对外开放内网的某些服务</li><li>SNAT: 源地址转换</li><li>DNAT: 目的地址转换</li><li>MASQUERADE: IP 伪装</li></ul><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@shcCentOS72VM07 ~<span style=color:#f92672>]</span><span style=color:#75715e># iptables -t filter -L</span>
+</span></span><span style=display:flex><span>Chain INPUT <span style=color:#f92672>(</span>policy ACCEPT<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>target     prot opt source               destination
+</span></span><span style=display:flex><span>ACCEPT     udp  --  anywhere             anywhere             udp dpt:domain
+</span></span><span style=display:flex><span>ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:domain
+</span></span><span style=display:flex><span>ACCEPT     udp  --  anywhere             anywhere             udp dpt:bootps
+</span></span><span style=display:flex><span>ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:bootps
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Chain FORWARD <span style=color:#f92672>(</span>policy ACCEPT<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>target     prot opt source               destination
+</span></span><span style=display:flex><span>ACCEPT     all  --  anywhere             192.168.122.0/24     ctstate RELATED,ESTABLISHED
+</span></span><span style=display:flex><span>ACCEPT     all  --  192.168.122.0/24     anywhere
+</span></span><span style=display:flex><span>ACCEPT     all  --  anywhere             anywhere
+</span></span><span style=display:flex><span>REJECT     all  --  anywhere             anywhere             reject-with icmp-port-unreachable
+</span></span><span style=display:flex><span>REJECT     all  --  anywhere             anywhere             reject-with icmp-port-unreachable
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Chain OUTPUT <span style=color:#f92672>(</span>policy ACCEPT<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span>target     prot opt source               destination
+</span></span><span style=display:flex><span>ACCEPT     udp  --  anywhere             anywhere             udp dpt:bootpc
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@shcCentOS72VM07 ~<span style=color:#f92672>]</span><span style=color:#75715e># iptables -t filter -A INPUT -s 10.0.0.1 -j ACCEPT  # 可以接收从 IP 为 10.0.0.1 发送的数据包</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@shcCentOS72VM07 ~<span style=color:#f92672>]</span><span style=color:#75715e># iptables -t filter -vnL</span>
+</span></span><span style=display:flex><span>Chain INPUT <span style=color:#f92672>(</span>policy ACCEPT <span style=color:#ae81ff>3170</span> packets, 320K bytes<span style=color:#f92672>)</span>  <span style=color:#75715e># 表示过滤了 3170 个数据包，320 KB</span>
+</span></span><span style=display:flex><span> pkts bytes target     prot opt in     out     source               destination
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> ACCEPT     udp  --  virbr0 *       0.0.0.0/0            0.0.0.0/0            udp dpt:53
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> ACCEPT     tcp  --  virbr0 *       0.0.0.0/0            0.0.0.0/0            tcp dpt:53
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> ACCEPT     udp  --  virbr0 *       0.0.0.0/0            0.0.0.0/0            udp dpt:67
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> ACCEPT     tcp  --  virbr0 *       0.0.0.0/0            0.0.0.0/0            tcp dpt:67
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> ACCEPT     all  --  *      *       10.0.0.1             0.0.0.0/0
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Chain FORWARD <span style=color:#f92672>(</span>policy ACCEPT <span style=color:#ae81ff>0</span> packets, <span style=color:#ae81ff>0</span> bytes<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span> pkts bytes target     prot opt in     out     source               destination
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> ACCEPT     all  --  *      virbr0  0.0.0.0/0            192.168.122.0/24     ctstate RELATED,ESTABLISHED
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> ACCEPT     all  --  virbr0 *       192.168.122.0/24     0.0.0.0/0
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> ACCEPT     all  --  virbr0 virbr0  0.0.0.0/0            0.0.0.0/0
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> REJECT     all  --  *      virbr0  0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> REJECT     all  --  virbr0 *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Chain OUTPUT <span style=color:#f92672>(</span>policy ACCEPT <span style=color:#ae81ff>33</span> packets, <span style=color:#ae81ff>3887</span> bytes<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span> pkts bytes target     prot opt in     out     source               destination
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> ACCEPT     udp  --  *      virbr0  0.0.0.0/0            0.0.0.0/0            udp dpt:68
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@shcCentOS72VM07 ~<span style=color:#f92672>]</span><span style=color:#75715e># iptables -A INPUT -s 10.0.0.2 -j ACCEPT</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@shcCentOS72VM07 ~<span style=color:#f92672>]</span><span style=color:#75715e># iptables -A INPUT -s 10.0.0.2 -j DROP</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@shcCentOS72VM07 ~<span style=color:#f92672>]</span><span style=color:#75715e># iptables -vnL</span>
+</span></span><span style=display:flex><span>Chain INPUT <span style=color:#f92672>(</span>policy ACCEPT <span style=color:#ae81ff>181</span> packets, <span style=color:#ae81ff>19084</span> bytes<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span> pkts bytes target     prot opt in     out     source               destination
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> ACCEPT     udp  --  virbr0 *       0.0.0.0/0            0.0.0.0/0            udp dpt:53
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> ACCEPT     tcp  --  virbr0 *       0.0.0.0/0            0.0.0.0/0            tcp dpt:53
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> ACCEPT     udp  --  virbr0 *       0.0.0.0/0            0.0.0.0/0            udp dpt:67
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> ACCEPT     tcp  --  virbr0 *       0.0.0.0/0            0.0.0.0/0            tcp dpt:67
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> ACCEPT     all  --  *      *       10.0.0.1             0.0.0.0/0
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> ACCEPT     all  --  *      *       10.0.0.2             0.0.0.0/0
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> DROP       all  --  *      *       10.0.0.2             0.0.0.0/0
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Chain FORWARD <span style=color:#f92672>(</span>policy ACCEPT <span style=color:#ae81ff>0</span> packets, <span style=color:#ae81ff>0</span> bytes<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span> pkts bytes target     prot opt in     out     source               destination
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> ACCEPT     all  --  *      virbr0  0.0.0.0/0            192.168.122.0/24     ctstate RELATED,ESTABLISHED
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> ACCEPT     all  --  virbr0 *       192.168.122.0/24     0.0.0.0/0
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> ACCEPT     all  --  virbr0 virbr0  0.0.0.0/0            0.0.0.0/0
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> REJECT     all  --  *      virbr0  0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> REJECT     all  --  virbr0 *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Chain OUTPUT <span style=color:#f92672>(</span>policy ACCEPT <span style=color:#ae81ff>27</span> packets, <span style=color:#ae81ff>2396</span> bytes<span style=color:#f92672>)</span>
+</span></span><span style=display:flex><span> pkts bytes target     prot opt in     out     source               destination
+</span></span><span style=display:flex><span>    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> ACCEPT     udp  --  *      virbr0  0.0.0.0/0            0.0.0.0/0            udp dpt:68
+</span></span></code></pre></div><p>上面的示例，<code>INPUT</code> 链配置了两条规则，分别是接收 IP 为 <code>10.0.0.2</code> 的数据包，和丢弃 <code>10.0.0.2</code> 的数据包。那么 <code>10.0.0.2</code> 的数据包能不能进来？</p><p><strong>可以</strong>。数据包会先匹配前面的 <code>ACCEPT 10.0.0.2</code> 的规则，这个时候数据包就进入了系统，所以<strong>规则顺序很重要</strong>。可以使用 <code>-I</code> 把规则从头插入。</p><p><code>(policy ACCEPT)</code> 表示默认的策略。也就意味着，如果没有匹配到任何规则，就会使用默认规则，这里就是全部允许。修改默认规则使用 <code>-P</code>，如 <code>iptables -P INPUT DROP</code>。</p><p>更多示例：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e># 拒绝进入防火墙的所有 ICMP 协议数据包</span>
+</span></span><span style=display:flex><span>iptables -I INPUT -p icmp -j REJECT
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 允许防火墙转发除 ICMP 协议以外的所有数据包</span>
+</span></span><span style=display:flex><span>iptables -A FORWARD -p ! icmp -j ACCEPT
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 拒绝转发来自 192.168.1.10 主机的数据，允许转发来自 192.168.0.0/24 网段的数据，注意顺序</span>
+</span></span><span style=display:flex><span>iptables -A FORWARD -s 192.168.1.11 -j REJECT
+</span></span><span style=display:flex><span>iptables -A FORWARD -s 192.168.0.0/24 -j ACCEPT
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 丢弃从网口（eth1）进入防火墙本机的源地址为私网地址的数据包</span>
+</span></span><span style=display:flex><span>iptables -A INPUT -i eth1 -s 192.168.0.0/16 -j DROP
+</span></span><span style=display:flex><span>iptables -A INPUT -i eth1 -s 172.16.0.0/12 -j DROP
+</span></span><span style=display:flex><span>iptables -A INPUT -i eth1 -s 10.0.0.0/8 -j DROP
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 封堵网段（192.168.1.0/24），两小时后解封</span>
+</span></span><span style=display:flex><span>iptables -I INPUT -s 10.20.30.0/24 -j DROP
+</span></span><span style=display:flex><span>iptables -I FORWARD -s 10.20.30.0/24 -j DROP
+</span></span><span style=display:flex><span>at now +2 hours <span style=color:#75715e># 借助 crond 计划任务来完成</span>
+</span></span><span style=display:flex><span>at&gt; iptables -D INPUT <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>at&gt; iptables -D FORWARD <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>1<span style=color:#f92672>]</span>+  Stopped     at now +2 hours
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 只允许管理员从 202.13.0.0/16 网段使用 SSH 远程登录防火墙主机</span>
+</span></span><span style=display:flex><span>iptables -A INPUT -p tcp --dport <span style=color:#ae81ff>22</span> -s 202.13.0.0/16 -j ACCEPT
+</span></span><span style=display:flex><span>iptables -A INPUT -p tcp --dport <span style=color:#ae81ff>22</span> -j DROP
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 允许本机开放从 TCP 端口 20-1024 提供的应用服务</span>
+</span></span><span style=display:flex><span>iptables -A INPUT -p tcp --dport 20:1024 -j ACCEPT
+</span></span><span style=display:flex><span>iptables -A OUTPUT -p tcp --sport 20:1024 -j ACCEPT
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 允许转发来自 192.168.0.0/24 局域网段的 DNS 解析请求数据包</span>
+</span></span><span style=display:flex><span>iptables -A FORWARD -s 192.168.0.0/24 -p udp --dport <span style=color:#ae81ff>53</span> -j ACCEPT
+</span></span><span style=display:flex><span>iptables -A FORWARD -d 192.168.0.0/24 -p udp --sport <span style=color:#ae81ff>53</span> -j ACCEPT
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 禁止其他主机 ping 防火墙主机，但是允许从防火墙上 ping 其他主机</span>
+</span></span><span style=display:flex><span>iptables -I INPUT -p icmp --icmp-type Echo-Request -j DROP
+</span></span><span style=display:flex><span>iptables -I INPUT -p icmp --icmp-type Echo-Reply -j ACCEPT
+</span></span><span style=display:flex><span>iptables -I INPUT -p icmp --icmp-type destination-Unreachable -j ACCEPT
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 禁止转发来自 MAC 地址为 00：0C：29：27：55：3F 的和主机的数据包</span>
+</span></span><span style=display:flex><span>iptables -A FORWARD -m mac --mac-source 00:0c:29:27:55:3F -j DROP
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 允许防火墙本机对外开放 TCP 端口 20、21、25、110 以及被动模式 FTP 端口 1250-1280</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># -m multiport –dport  来指定目的端口及范围</span>
+</span></span><span style=display:flex><span>iptables -A INPUT -p tcp -m multiport --dport 20,21,25,110,1250:1280 -j ACCEPT
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 禁止转发源 IP 地址为 192.168.1.20-192.168.1.99 的 TCP 数据包。</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># -m –iprange –src-range 指定 IP 范围</span>
+</span></span><span style=display:flex><span>iptables -A FORWARD -p tcp -m iprange --src-range 192.168.1.20-192.168.1.99 -j DROP
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 禁止转发与正常 TCP 连接无关的非—syn请求数据包</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># -m state 表示数据包的连接状态</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># NEW 表示与任何连接无关的</span>
+</span></span><span style=display:flex><span>iptables -A FORWARD -m state --state NEW -p tcp ! --syn -j DROP
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 拒绝访问防火墙的新数据包，但允许响应连接或与已有连接相关的数据包</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># ESTABLISHED 表示已经响应请求或者已经建立连接的数据包</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># RELATED 表示与已建立的连接有相关性的</span>
+</span></span><span style=display:flex><span>iptables -A INPUT -p tcp -m state --state NEW -j DROP
+</span></span><span style=display:flex><span>iptables -A INPUT -p tcp -m state --state ESTABLISHED,RELATED -j ACCEPT
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 只开放本机的 80、FTP(20、21、20450-20480)，放行外部主机发住服务器其它端口的应答数据包，将其他入站数据包均予以丢弃处理</span>
+</span></span><span style=display:flex><span>iptables -I INPUT -p tcp -m multiport --dport 20,21,80 -j ACCEPT
+</span></span><span style=display:flex><span>iptables -I INPUT -p tcp --dport 20450:20480 -j ACCEPT
+</span></span><span style=display:flex><span>iptables -I INPUT -p tcp -m state --state ESTABLISHED -j ACCEPT
+</span></span><span style=display:flex><span>iptables -P INPUT DROP
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 删除规则</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 添加一条 NAT 规则</span>
+</span></span><span style=display:flex><span>iptables -t nat -A PREROUTING -p tcp -m tcp --dport <span style=color:#ae81ff>80</span> -j DNAT --to-destination 192.168.99.11:80
+</span></span><span style=display:flex><span><span style=color:#75715e># 删除上面的规则</span>
+</span></span><span style=display:flex><span>iptables -t nat -D PREROUTING -p tcp -m tcp --dport <span style=color:#ae81ff>80</span> -j DNAT --to-destination 192.168.99.11:80
+</span></span></code></pre></div><p><code>nat</code> 表使用：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e># 进入防火墙的数据包目的地址转换，从网口 eth0 进入的数据包，把目的 IP 为 114.115.116.117，端口为 80 的数据包，转到 10.0.0.1</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 这里外网用户访问公网地址 114.115.116.117:80，防火墙再转发到内网地址</span>
+</span></span><span style=display:flex><span>iptables -t nat -A PREROUTING -i eth0 -d 114.115.116.117 -p tcp --dport <span style=color:#ae81ff>80</span> -j DNAT --to-destination 10.0.0.1
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 源地址转换，源地址 10.0.0.0/24 ，从网口 eth1 发出，并把源地址伪装成 111.112.113.114，响应回来后再转换为源地址</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 这里是内网地址 10.0.0.0/24 主机访问外网，会将内网地址伪装成公网 IP 111.112.113.114</span>
+</span></span><span style=display:flex><span>iptables -t nat -A POSTROUTING -s 10.0.0.0/24 -i eth1 -j SNAT --to-source 111.112.113.114
+</span></span></code></pre></div><h3 id=iptables-配置文件>iptables 配置文件
+<a class=anchor href=#iptables-%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6>#</a></h3><p>命令行配置，在关机后会失效，想要持久化，可以修改配置文件：<code>/etc/sysconfig/iptables</code></p><p>保存命令：</p><ul><li>CentOS 6 可以使用 <code>service iptables save</code></li><li>CentOS 7 需要使用 <code>yum install iptables-services</code> 先安装软件包<ul><li><code>iptables-save</code> 可以输出内存中的 iptables 规则，<code>iptables-save > /etc/sysconfig/iptables</code> 就可以把内存中的配置保存到配置文件。下次开机时配置就会保留，相当于执行了 <code>iptables-restore &lt; /etc/sysconfig/iptables</code></li></ul></li></ul><h2 id=firewalld>firewalld
+<a class=anchor href=#firewalld>#</a></h2><p>firewalld 使用比 iptables 简单，主要区别：</p><ul><li>firewalld 使用区域和服务而不是链式规则。</li><li>它动态管理规则集，允许更新规则而不破坏现有会话和连接。</li></ul><p>使用：</p><ul><li><code>systemctl start|stop|enable|disbale firewalld.service</code> 控制 firewalld 服务</li><li><code>firewll-cmd</code> firewalld 配置命令</li></ul><p>iptables 和 firewalld 同时运行会产生冲突。应该关闭其中一个。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e># 查看状态</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@shcCentOS72VM07 ~<span style=color:#f92672>]</span><span style=color:#75715e># firewall-cmd --state</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 重新加载配置</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@shcCentOS72VM07 ~<span style=color:#f92672>]</span><span style=color:#75715e># firewall-cmd --reload</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 查看具体信息</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@shcCentOS72VM07 ~<span style=color:#f92672>]</span><span style=color:#75715e># firewall-cmd --list-all</span>
+</span></span><span style=display:flex><span>public <span style=color:#f92672>(</span>active<span style=color:#f92672>)</span>                 <span style=color:#75715e># public 就是一个区域 zone</span>
+</span></span><span style=display:flex><span>  target: default
+</span></span><span style=display:flex><span>  icmp-block-inversion: no
+</span></span><span style=display:flex><span>  interfaces: eth0
+</span></span><span style=display:flex><span>  sources: 10.0.0.1 10.0.0.1/24
+</span></span><span style=display:flex><span>  services: ssh dhcpv6-client
+</span></span><span style=display:flex><span>  ports: 80/tcp 23/tcp
+</span></span><span style=display:flex><span>  protocols:
+</span></span><span style=display:flex><span>  masquerade: no
+</span></span><span style=display:flex><span>  forward-ports:
+</span></span><span style=display:flex><span>  sources-ports:
+</span></span><span style=display:flex><span>  icmp-blocks:
+</span></span><span style=display:flex><span>  rich rules:
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@shcCentOS72VM07 ~<span style=color:#f92672>]</span><span style=color:#75715e>#  </span>
+</span></span></code></pre></div><p>上面的示例，就表示 public zone 绑定了 eth0 网口，source IP 为 <code>10.0.0.1</code> <code>10.0.0.1/24</code> 的可以访问端口 80，和 23，还可以访问 ssh 和 dhcpv6-client 服务。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@shcCentOS72VM07 ~<span style=color:#f92672>]</span><span style=color:#75715e># firewall-cmd --zone=public --list-interfaces</span>
+</span></span><span style=display:flex><span>eth0
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@shcCentOS72VM07 ~<span style=color:#f92672>]</span><span style=color:#75715e># firewall-cmd --list-ports</span>
+</span></span><span style=display:flex><span>80/tcp 23/tcp
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@shcCentOS72VM07 ~<span style=color:#f92672>]</span><span style=color:#75715e># firewall-cmd --list-services</span>
+</span></span><span style=display:flex><span>ssh dhcpv6-client
+</span></span></code></pre></div><p>上面的示例是单独查看某一项配置，<code>--zone=public</code> 可以省略，public 是默认的。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@shcCentOS72VM07 ~<span style=color:#f92672>]</span><span style=color:#75715e># firewall-cmd --get-zones  # 查看</span>
+</span></span><span style=display:flex><span>block dmz drop external home internal public trusted work
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@shcCentOS72VM07 ~<span style=color:#f92672>]</span><span style=color:#75715e># firewall-cmd --get-default-zone  # 查看默认使用的 zone</span>
+</span></span><span style=display:flex><span>public
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@shcCentOS72VM07 ~<span style=color:#f92672>]</span><span style=color:#75715e># firewall-cmd --get-active-zones  # 查看激活的 zone</span>
+</span></span><span style=display:flex><span>public
+</span></span><span style=display:flex><span>  interfaces: eth0
+</span></span><span style=display:flex><span>  sources: 10.0.0.1 10.0.0.1/24
+</span></span><span style=display:flex><span><span style=color:#f92672>[</span>root@shcCentOS72VM07 ~<span style=color:#f92672>]</span><span style=color:#75715e># firewall-cmd --get-default-zone  # 查看默认使用的 zone</span>
+</span></span><span style=display:flex><span>public
+</span></span></code></pre></div><h3 id=添加规则>添加规则
+<a class=anchor href=#%e6%b7%bb%e5%8a%a0%e8%a7%84%e5%88%99>#</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#f92672>[</span>root@shcCentOS72VM07 ~<span style=color:#f92672>]</span><span style=color:#75715e># firewall-cmd --add-services=https  # 添加服务</span>
+</span></span><span style=display:flex><span>success  
+</span></span></code></pre></div><p>上面的示例中添加了一个 https 服务，但是这种规则是临时的，如果系统重启，或者执行 <code>firewall-cmd --reload</code> 之后就会消失，如果想要持久保存，使用 <code>--permanent</code> 参数。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>firewall-cmd --zone<span style=color:#f92672>=</span>public --add-service<span style=color:#f92672>=</span>https --permanent
+</span></span><span style=display:flex><span><span style=color:#75715e># reload 命令会删除所有运行时配置并应用永久配置。因为 firewalld 动态管理规则集，所以它不会破坏现有的连接和会话</span>
+</span></span><span style=display:flex><span>firewall-cmd --reload
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 也可以同时添加到临时和持久规则集</span>
+</span></span><span style=display:flex><span>firewall-cmd --zone<span style=color:#f92672>=</span>public --add-service<span style=color:#f92672>=</span>https --permanent  <span style=color:#75715e># 添加到持久规则集，会在 reload 之后生效</span>
+</span></span><span style=display:flex><span>firewall-cmd --zone<span style=color:#f92672>=</span>public --add-service<span style=color:#f92672>=</span>https              <span style=color:#75715e># 临时规则集，会立即生效</span>
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e># 查看默认的可用服务</span>
+</span></span><span style=display:flex><span>firewall-cmd --get-services
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 要启用或禁用 HTTP 服务： </span>
+</span></span><span style=display:flex><span>firewall-cmd --zone<span style=color:#f92672>=</span>public --add-service<span style=color:#f92672>=</span>http --permanent
+</span></span><span style=display:flex><span>firewall-cmd --zone<span style=color:#f92672>=</span>public --remove-service<span style=color:#f92672>=</span>http --permanent
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 允许或者禁用 12345 端口的 TCP 流量。</span>
+</span></span><span style=display:flex><span>firewall-cmd --zone<span style=color:#f92672>=</span>public --add-port<span style=color:#f92672>=</span>12345/tcp --permanent
+</span></span><span style=display:flex><span>firewall-cmd --zone<span style=color:#f92672>=</span>public --remove-port<span style=color:#f92672>=</span>12345/tcp --permanent
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 在同一台服务器上将 80 端口的流量转发到 12345 端口</span>
+</span></span><span style=display:flex><span>firewall-cmd --zone<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;public&#34;</span> --add-forward-port<span style=color:#f92672>=</span>port<span style=color:#f92672>=</span>80:proto<span style=color:#f92672>=</span>tcp:toport<span style=color:#f92672>=</span><span style=color:#ae81ff>12345</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 不同服务器端口转发，要先开启 masquerade</span>
+</span></span><span style=display:flex><span>firewall-cmd --zone<span style=color:#f92672>=</span>public --add-masquerade
+</span></span><span style=display:flex><span><span style=color:#75715e># 将 IP 地址为 ：123.456.78.9 的远程服务器上 80 端口的流量转发到 8080 上</span>
+</span></span><span style=display:flex><span>firewall-cmd --zone<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;public&#34;</span> --add-forward-port<span style=color:#f92672>=</span>port<span style=color:#f92672>=</span>80:proto<span style=color:#f92672>=</span>tcp:toport<span style=color:#f92672>=</span>8080:toaddr<span style=color:#f92672>=</span>123.456.78.9
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># 删除规则 --remove 替换 --add</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># firewall-cmd --zone=public --remove-masquerade</span>
+</span></span></code></pre></div><h3 id=配置文件>配置文件
+<a class=anchor href=#%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6>#</a></h3><ul><li><code>/usr/lib/FirewallD</code> 下保存默认配置，如默认区域和公用服务。避免修改它们，因为每次 firewall 软件包更新时都会覆盖这些文件。</li><li><code>/etc/firewalld</code> 下保存系统配置文件。 这些文件将覆盖默认配置。</li></ul></article><footer class=book-footer><div class="flex flex-wrap justify-between"><div><a class="flex align-center" href=https://github.com/shipengqi/os-learn/commit/4f49c8bc26ad1442af2b9f5753687f18dc226c1a title='Last modified by shipengqi | November 15, 2023' target=_blank rel=noopener><img src=/os-learn/svg/calendar.svg class=book-icon alt=Calendar>
+<span>November 15, 2023</span></a></div><div><a class="flex align-center" href=https://github.com/shipengqi/os-learn/edit/master/content/docs/commands/17_firewall.md target=_blank rel=noopener><img src=/os-learn/svg/edit.svg class=book-icon alt=Edit>
+<span>Edit this page</span></a></div></div><script>(function(){function e(e){const t=window.getSelection(),n=document.createRange();n.selectNodeContents(e),t.removeAllRanges(),t.addRange(n)}document.querySelectorAll("pre code").forEach(t=>{t.addEventListener("click",function(){if(window.getSelection().toString())return;e(t.parentElement),navigator.clipboard&&navigator.clipboard.writeText(t.parentElement.textContent)})})})()</script></footer><div class=book-comments></div><label for=menu-control class="hidden book-menu-overlay"></label></div><aside class=book-toc><div class=book-toc-content><nav id=TableOfContents><ul><li><a href=#防火墙>防火墙</a><ul><li><a href=#iptables>iptables</a><ul><li><a href=#iptables-配置文件>iptables 配置文件</a></li></ul></li><li><a href=#firewalld>firewalld</a><ul><li><a href=#添加规则>添加规则</a></li><li><a href=#配置文件>配置文件</a></li></ul></li></ul></li></ul></nav></div></aside></main></body></html>
