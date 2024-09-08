@@ -92,15 +92,12 @@ daemon:*:17492:0:99999:7:::
 用户组配置文件 `/etc/group`：
 
 ```bash
-# 用户组名:是否需要密码验证:GID:其他组设置
+# 用户组名:是否需要密码验证:GID:用户组中的用户列表
 root:x:0:
 bin:x:1:
 daemon:x:2:
-# ...
-wheel:x:10:admin
-cdrom:x:11:
-mail:x:12:postfix
+daemon2:x:3:bin,daemon2
 # ...
 ```
 
-- 其他组设置，`mail:x:12:postfix` 表示 `psotfix` 属于一个其他的组，也属于 mail 组。
+- 用户组中的用户列表：如果为空，表示该用户组是这个用户的初始组，例如 `daemon:x:2:` 就表示 `daemon` 这个用户组是用户 `daemon` 的初始组。**每个用户只能属于一个初始组**。
