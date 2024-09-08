@@ -1,3 +1,8 @@
+---
+title: Linux 内存
+weight: 2
+---
+
 # Linux 内存
 
 ## 虚拟内存

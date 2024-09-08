@@ -9,14 +9,16 @@ weight: 6
 
 ## net-tools
 
-- `ifconfig` 网卡配置
-- `route` 网关配置
-- `netstat`
+net-tools 包括：
+
+- `ifconfig`：网卡配置。
+- `route`：网关配置。
+- `netstat`：查看网络状态。
 
 ## iproute2
 
-- `ip`
-- `ss`
+- `ip`：包含了 `ifconfig` 和 `route` 的功能。
+- `ss`：Socket Statistics 的缩写，和 `netstat` 类似，但是更快更强。
 
 ## 使用网络工具
 
@@ -24,15 +26,13 @@ weight: 6
 
 执行 `ifconfig` 查看网卡。
 
-CentOS 使用一致性网络设备命名。
-
 一般第一块网卡是 `eth0`。也可能是：
 
 - `eno1` 板载网卡
 - `ens33` PCI-E 网卡
 - `enp0s3` 无法获取物理信息的 PCI-E 网卡
 
-都不匹配就使用 `eth0`。可以通过网卡名称，知道使用的是什么类型的网卡。
+都不匹配就使用 `eth0`。
 
 ### 配置网卡名称
 

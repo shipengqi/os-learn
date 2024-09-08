@@ -4,20 +4,31 @@ OS learning ...
 
 ## Usage
 
-development:
+Development:
 
 ```sh
-# git clone  https://github.com/alex-shpak/hugo-book themes/book
-git submodule add https://github.com/alex-shpak/hugo-book themes/book
+# init submodule, set the URLs and paths of the submodules based on the information in the .gitmodules file, 
+# but will not download the submodule's content
+# after cloning a repository containing submodules, run this command to initialize the submodules.
+git submodule init
 
+# Update the submodule's content to the latest commit in the branch specified in the .gitmodules file
+# Run this command after initializing a submodule, or when you need to update the contents of a submodule.
+git submodule update
+
+# git submodule add git@github.com:alex-shpak/hugo-book.git themes/book
+
+# start server
 hugo server --minify --theme book
 ```
 
-deploy:
+Manually deploy:
 
 ```sh
 ./deploy.sh
 ```
+
+> Any changes in the `content` directory will automatically trigger a deployment.
 
 ## Menu
 
