@@ -5,62 +5,100 @@ weight: 18
 
 # SSH
 
-telnet 是明文传输，不安全。所以应该使用 SSH 来远程连接。
+SSH（Secure Shell）是一种网络协议，用于加密两台计算机之间的通信，并且支持各种身份验证机制。主要用于服务器登录和各种加密通信。
+
+历史上，网络主机之间的通信是不加密的，属于明文通信。这使得通信很不安全。SSH 就是为了解决这个问题而诞生的。
+
+SSH 的软件架构是服务器-客户端模式（Server - Client）。
+
+## SSH 客户端
+
+基本用法：
 
 ```bash
-ssh [-p port] user@host
+# 不指定用户名，使用客户端的当前用户名，作为远程服务器的登录用户名
+$ ssh hostname
+
+# 指定用户名
+$ ssh user@hostname
+
+# -l 参数，用户名和主机名可以分开
+$ ssh -l username host
+
+# -p 指定端口，默认连接服务器的 22 端口
+$ ssh -p 8821 foo.com
+
+# 连接服务器，并立刻执行 command，非交互模式
+ssh username@hostname command
 ```
 
-`user` 省略的话，就会使用当前登录的用户。
+### 客户端连接流程
 
-## 配置文件
-
-- 客户端配置文件：`/etc/ssh/ssh_config`
-- 服务端配置文件：`/etc/ssh/sshd_config`
-  - Port 22 默认端口
-  - PermitRootLogin yes 是否允许 root 登录
-  - AuthorizedKeysFile .ssh/authorized_keys
-  
-## 中间人攻击
-
-SSH 之所以能够保证安全，原因在于它采用了公钥加密。
-
-整个过程是这样的：
-
-1. 远程主机收到用户的登录请求，把自己的公钥发给用户。
-2. 用户使用这个公钥，将登录密码加密后，发送回来。
-3. 远程主机用自己的私钥，解密登录密码，如果密码正确，就同意用户登录。
-
-这个过程本身是安全的，但是实施的时候存在一个风险：如果有人截获了登录请求，然后冒充远程主机，将伪造的公钥发给用户，那么用户很难辨别真伪。因为不像 https 协议，SSH 协议的公钥是没有证书中心（CA）公证的，也就是说，都是自己签发的。
-
-可以设想，如果攻击者插在用户与远程主机之间（比如在公共的 wifi 区域），用伪造的公钥，获取用户的登录密码。再用这个密码登录远程主机。这种风险就是的"中间人攻击"（Man-in-the-middle attack）。
-
-所以第一次登录远程主机，系统会出现下面的提示：
+ssh 连接远程服务器，如果是第一次连接某一台服务器，会出现下面的提示：
 
 ```sh
-$ ssh root@16.187.189.94
 The authenticity of host '16.187.189.94 (16.187.189.94)' can't be established.
-ECDSA key fingerprint is MD5:b0:4f:bb:ef:80:aa:07:5f:08:f2:81:5f:5f:9d:73:4f.
+ECDSA key fingerprint is SHA256:Vybt22mVXuNuB5unE++yowF7lgA/9/2bLSiO3qmYWBY.
 Are you sure you want to continue connecting (yes/no)?
 ```
 
-这段话的意思是，无法确认 host 主机的真实性，只知道它的公钥指纹，是否继续？
+表示不认识 `16.187.189.94` 这台服务器的指纹，确认是否需要连接。**服务器指纹** 指的是 SSH 服务器公钥的哈希值。
 
-**公钥指纹**是指公钥长度较长（这里采用 RSA 算法，长达 1024 位），很难比对，所以对其进行哈希计算，将它变成一个 128 位的指纹。例如
-`b0:4f:bb:ef:80:aa:07:5f:08:f2:81:5f:5f:9d:73:4f`，再进行比较，就容易多了。
+查看公钥的指纹，可以使用命令：
 
-远程主机必须在自己的网站上贴出公钥指纹，以便用户自行核对。
+```bash
+$ ssh-keygen -l -f /etc/ssh/ssh_host_ecdsa_key.pub
+256 Vybt22mVXuNuB5unE++yowF7lgA/9/2bLSiO3qmYWBY   (ECDSA)
+```
 
-如果用户决定接受这个远程主机的公钥，输入 yes。系统会出现一句提示，然后，会要求输入密码。
+输入 `yes`，客户端会将服务器的公钥指纹储存在本机的 `~/.ssh/known_hosts` 文件中。每次连接服务器时，通过该文件判断是否为陌生主机。
 
-## 公钥登录
+建立连接后，输入用户名密码就可以登录了。
 
-使用密码登录，每次都必须输入密码。可以通过公钥登录：
+### 服务器密钥变更
 
-1. 用户将自己的公钥储存在远程主机上。
-2. 登录的时候，远程主机会向用户发送一段随机字符串。
-3. 用户收到随机字符串，用自己的私钥加密后，再发给远程主机。
-4. 远程主机用事先储存的公钥进行解密，如果成功，就证明用户是可信的，直接允许登录 shell，不再要求密码。
+服务器指纹可以防止有人恶意冒充远程主机。如果服务器的密钥发生变更（比如重装了 SSH 服务器），客户端再次连接时，发现公钥指纹不匹配，会显示一段警告信息：
+
+```
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!
+Someone could be eavesdropping on you right now (man-in-the-middle attack)!
+It is also possible that the RSA host key has just been changed.
+The fingerprint for the RSA key sent by the remote host is
+77:a5:69:81:9b:eb:40:76:7b:13:04:a9:6c:f4:9c:5d.
+Please contact your system administrator.
+Add correct host key in /home/me/.ssh/known_hosts to get rid of this message.
+Offending key in /home/me/.ssh/known_hosts:36
+```
+
+表示公钥指纹和 `~/.ssh/known_hosts` 文件储存的不一样。如果要信任新的公钥，可以使用命令，将原来的公钥指纹从 `~/.ssh/known_hosts` 文件删除：
+
+```bash
+$ ssh-keygen -R hostname
+```
+
+也可以手动从 `~/.ssh/known_hosts` 文件中删除。
+
+删除以后，重新连接就可以了。
+
+### 配置文件
+
+SSH 客户端的全局配置文件是 `/etc/ssh/ssh_config`，用户个人的配置文件在 `~/.ssh/config`，优先级高于全局配置文件。
+
+## 密钥登录
+
+SSH 默认使用密码登录，每次都必须输入密码，不安全也麻烦。可以通过密钥登录。
+
+SSH 密钥登录采用的是非对称加密，私钥必须私密保存，不能泄漏；公钥则是公开的，可以对外发送。如果数据使用公钥加密，那么只有使用对应的私钥才能解密；如果使用私钥加密（这个过程一般称为“签名”），也只有使用对应的公钥解密。
+
+密钥登录过程：
+
+1. 用户将自己的公钥储存在远程主机上的指定位置。
+2. 用户登录的时候，远程主机会向用户发送一段随机字符串。
+3. 用户收到随机字符串，用自己的私钥对随机串加密（签名）后，再发给远程主机。
+4. 远程主机收到客户端发来的加密签名后，用事先储存的公钥进行解密，然后跟原始数据比较。如果一致，就允许用户登录。
 
 用户可以使用 `ssh-keygen` 密钥对，生成时可以对私钥设置口令（passphrase）。一般密钥对会放在 `$HOME/.ssh/` 目录下，会新生成两个文件：`id_rsa.pub` 和 `id_rsa`。前者是公钥，后者是私钥。
 
@@ -95,6 +133,100 @@ ssh-copy-id -i ~/.ssh/id_rsa.pub root@16.187.189.94
 
 重启 sshd 服务：`systemctl restart sshd`。
 
-## 远程拷贝
+### ssh-agent
 
-远程拷贝文件使用 `scp`
+私钥设置了密码以后，每次使用都必须输入密码，非常麻烦。`ssh-agent` 命令就是为了解决这个问题，它让用户在整个 Bash 对话（session）之中，只在第一次使用 SSH 命令时输入密码，然后将私钥保存在内存中，后面都不需要再输入私钥的密码了。
+
+使用步骤：
+
+第一步，新建一个命令行对话：
+
+```bash
+# bash 可以换成 zsh，fish 等
+$ ssh-agent bash
+```
+
+也可以在当前对话启用 `ssh-agent`：
+
+```bash
+$ eval `ssh-agent`
+```
+
+第二步，在新建的 Shell 对话里面，使用 `ssh-add` 命令添加默认的私钥：
+
+```bash
+# 添加默认的私钥
+$ ssh-add
+Enter passphrase for /home/you/.ssh/id_dsa: ********
+Identity added: /home/you/.ssh/id_dsa (/home/you/.ssh/id_dsa)
+
+# 添加指定的私钥
+$ ssh-add other-key-file 
+```
+
+添加私钥时，要输入密码，之后在这个会话中，就不再需要输入私钥密码了。
+
+第三步，使用 ssh 命令正常登录远程服务器。
+
+```bash
+$ ssh hostname
+```
+
+退出 `ssh-agent`：
+
+```bash
+$ ssh-agent -k
+```
+
+也可以直接关闭 shell 会话。
+
+
+## SSH 服务器
+
+### 配置文件
+
+服务端配置文件 `/etc/ssh/sshd_config`。
+
+每行都是配置项和对应的值，配置项的大小写不敏感，与值之间使用空格分隔。注释只能放在一行的开头，不能放在一行的结尾。
+
+## scp 和 sftp
+
+### scp
+
+scp（secure copy），是 SSH 提供的一个客户端程序，用来在两台主机之间加密传送文件。
+
+```bash
+# 本地文件复制到远程
+$ scp file.txt user@hostname:/remote/directory
+
+# 将本机整个目录拷贝到远程目录下
+$ scp -r local/directory user@hostname:/remote_directory/
+
+# 将本机目录下的所有内容拷贝到远程目录下
+$ scp -r local/directory/* user@hostname:/remote_directory/
+
+# 远程文件复制到本地
+$ scp user@hostname:/remote/file.txt /local/directory
+
+# 拷贝远程目录下的所有内容，到本机目录下
+$ scp -r user@hostname:directory/SourceFolder TargetFolder
+```
+
+### sftp
+
+`sftp` 是 SSH 提供的一个客户端应用程序，主要用来安全地访问 FTP。
+
+```bash
+$ sftp user@hostname
+```
+
+验证成功以后，就会出现 FTP 的提示符 `sftp>`：
+
+```bash
+$ sftp root@example.com
+root@example.com's password:
+Connected to example.com.
+sftp>
+```
+
+然后就可以输入 FTP 命令。
