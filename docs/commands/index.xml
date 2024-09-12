@@ -49,14 +49,12 @@ iptables -&amp;gt; Tables -&amp;gt; Chains -&amp;gt; Rules tables 由 chains 组
 filter 包过滤 nat 网络地址转换 mangle 包重构(修改) raw 数据跟踪处理 链（chains）是数据包传播的路径，每一条链其实就是众多规则中的一个检查清单，每一条链中可以有一条或数条规则。
 当一个数据包到达一个链时，iptables 就会从链中第一条规则开始检查，看该数据包是否满足规则所定义的条件。如果满足，系统就会根据该条规则所定义的方法处理该数据包； 否则 iptables 将继续检查下一条规则，如果该数据包不符合链中任一条规则，iptables 就会根据该链预先定义的默认策略来处理数据包。
 iptables 的规则链：
-INPUT 接收的的数据包使用此规则链中的策略 OUTPUT 发送的数据包使用此规则链中的策略 FORWARD 转发数据包时使用此规则链中的策略 PREROUTING 目的地址转换 POSTROUTING 源地址转换 iptables [-t 表] 命令选项 [规则链] 规则，-t 默认使用的是 filter。</description></item><item><title>SSH</title><link>http://shipengqi.github.io/os-learn/docs/commands/18_ssh/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>http://shipengqi.github.io/os-learn/docs/commands/18_ssh/</guid><description>SSH # telnet 是明文传输，不安全。所以应该使用 SSH 来远程连接。
-ssh [-p port] user@host user 省略的话，就会使用当前登录的用户。
-配置文件 # 客户端配置文件：/etc/ssh/ssh_config 服务端配置文件：/etc/ssh/sshd_config Port 22 默认端口 PermitRootLogin yes 是否允许 root 登录 AuthorizedKeysFile .ssh/authorized_keys 中间人攻击 # SSH 之所以能够保证安全，原因在于它采用了公钥加密。
-整个过程是这样的：
-远程主机收到用户的登录请求，把自己的公钥发给用户。 用户使用这个公钥，将登录密码加密后，发送回来。 远程主机用自己的私钥，解密登录密码，如果密码正确，就同意用户登录。 这个过程本身是安全的，但是实施的时候存在一个风险：如果有人截获了登录请求，然后冒充远程主机，将伪造的公钥发给用户，那么用户很难辨别真伪。因为不像 https 协议，SSH 协议的公钥是没有证书中心（CA）公证的，也就是说，都是自己签发的。
-可以设想，如果攻击者插在用户与远程主机之间（比如在公共的 wifi 区域），用伪造的公钥，获取用户的登录密码。再用这个密码登录远程主机。这种风险就是的&amp;quot;中间人攻击&amp;quot;（Man-in-the-middle attack）。
-所以第一次登录远程主机，系统会出现下面的提示：
-$ ssh root@16.187.189.94 The authenticity of host &amp;#39;16.187.189.94 (16.187.189.94)&amp;#39; can&amp;#39;t be established. ECDSA key fingerprint is MD5:b0:4f:bb:ef:80:aa:07:5f:08:f2:81:5f:5f:9d:73:4f. Are you sure you want to continue connecting (yes/no)? 这段话的意思是，无法确认 host 主机的真实性，只知道它的公钥指纹，是否继续？</description></item><item><title>FTP</title><link>http://shipengqi.github.io/os-learn/docs/commands/19_ftp/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>http://shipengqi.github.io/os-learn/docs/commands/19_ftp/</guid><description>FTP # ftp 协议的全称是文件传输协议。
+INPUT 接收的的数据包使用此规则链中的策略 OUTPUT 发送的数据包使用此规则链中的策略 FORWARD 转发数据包时使用此规则链中的策略 PREROUTING 目的地址转换 POSTROUTING 源地址转换 iptables [-t 表] 命令选项 [规则链] 规则，-t 默认使用的是 filter。</description></item><item><title>SSH</title><link>http://shipengqi.github.io/os-learn/docs/commands/18_ssh/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>http://shipengqi.github.io/os-learn/docs/commands/18_ssh/</guid><description>SSH # SSH（Secure Shell）是一种网络协议，用于加密两台计算机之间的通信，并且支持各种身份验证机制。主要用于服务器登录和各种加密通信。
+历史上，网络主机之间的通信是不加密的，属于明文通信。这使得通信很不安全。SSH 就是为了解决这个问题而诞生的。
+SSH 的软件架构是服务器-客户端模式（Server - Client）。
+SSH 客户端 # 基本用法：
+# 不指定用户名，使用客户端的当前用户名，作为远程服务器的登录用户名 $ ssh hostname # 指定用户名 $ ssh user@hostname # -l 参数，用户名和主机名可以分开 $ ssh -l username host # -p 指定端口，默认连接服务器的 22 端口 $ ssh -p 8821 foo.com # 连接服务器，并立刻执行 command，非交互模式 ssh username@hostname command 客户端连接流程 # ssh 连接远程服务器，如果是第一次连接某一台服务器，会出现下面的提示：
+The authenticity of host &amp;#39;16.187.189.94 (16.187.189.94)&amp;#39; can&amp;#39;t be established. ECDSA key fingerprint is SHA256:Vybt22mVXuNuB5unE++yowF7lgA/9/2bLSiO3qmYWBY. Are you sure you want to continue connecting (yes/no)?</description></item><item><title>FTP</title><link>http://shipengqi.github.io/os-learn/docs/commands/19_ftp/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>http://shipengqi.github.io/os-learn/docs/commands/19_ftp/</guid><description>FTP # ftp 协议的全称是文件传输协议。
 FTP 采用两个 TCP 连接来传输一个文件：
 控制连接：服务器以被动的方式，打开众所周知用于 FTP 的端口 21，客户端则主动发起连接。该连接将命令从客户端传给服务器，并传回服务器的应答。常用的命令有： list 获取文件目录 reter 取一个文件 store 存一个文件 数据连接：每当一个文件在客户端与服务器之间传输时，就创建一个数据连接。 FTP 的两种模式 # 两种模式都是站在 FTP 服务器的角度来说的。
 主动模式（PORT） # 客户端随机打开一个大于 1024 的端口 N，向服务器的命令端口 21 发起连接，同时开放 N+1 端口监听，并向服务器发出 port N+1 命令，由服务器从自己的数据端口 20，主动连接到客户端指定的数据端口 N+1。
