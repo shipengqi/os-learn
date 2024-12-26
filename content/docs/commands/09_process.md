@@ -17,7 +17,7 @@ weight: 9
 
 ### ps
 
-执行 `ps` 查看当前终端的可以看到的进程，p 代表 processes，也就是进程；s 代表 snapshot，也就是快照：
+执行 `ps` 查看当前终端的可以看到的进程，`p` 代表 processes，也就是进程；`s` 代表 snapshot，也就是快照：
 
 ```bash
 [root@pooky ~]# ps
@@ -54,12 +54,12 @@ weight: 9
 
 ```
 
-- `ps -A` 和 `ps -e` 一样
-- `ps -ef` 显示所有进程，包含命令信息，`-f` 包含更多描述字段
-- `ps -eLf` 显示线程
-- `ps -au` 显示详细的信息
-- `ps -aux` 显示所有用户的进程
-- `ps -u root` 显示 root 用户的进程
+- `ps -A` 和 `ps -e` 一样。
+- `ps -ef`：显示所有进程，包含命令信息，`-f` 包含更多描述字段。
+- `ps -eLf`：显示线程。
+- `ps -au`：显示详细的信息。
+- `ps -aux`：显示所有用户的进程。
+- `ps -u root`：显示 root 用户的进程。
 
 ### pstree
 
@@ -243,11 +243,11 @@ KiB Swap:        0 total,        0 free,        0 used. 14404532 avail Mem
 ## 进程控制
 
 - 调整进程的优先级
-  - nice 范围从 `-20` 到 `19`，值越小表示优先级越高，抢占资源就越多
-  - renice 重新设置优先级
+  - `nice` 范围从 `-20` 到 `19`，值越小表示优先级越高，抢占资源就越多。
+  - `renice` 重新设置优先级。
 - 进程的作业控制
   - `&` 符号，后台运行进程，`./a.sh &`。
-  - jobs
+  - `jobs` 命令。
 
 ### nice
 
@@ -292,9 +292,9 @@ KiB Swap:        0 total,        0 free,        0 used. 14390072 avail Mem
 23294 root      20   0  113176   1192   1008 R 100.0  0.0   0:23.15 a.sh
 ```
 
-可以看到进程已经占满了一个 CPU。进程的状态栏中 `PR` 就是进程的优先级， `NI` 就是 nice 值。
+可以看到进程已经占满了一个 CPU。进程的状态栏中 `PR` 就是进程的优先级， `NI` 就是 `nice` 值。
 
-重新设置优先级，先把进程退出，然后使用 nice 命令设置：
+重新设置优先级，先把进程退出，然后使用 `nice` 命令设置：
 
 ```bash
 [root@pooky ~]# nice -n 10 ./a.sh
@@ -312,7 +312,7 @@ KiB Swap:        0 total,        0 free,        0 used. 14391492 avail Mem
 23780 root      30  10  113176   1188   1004 R  92.4  0.0   0:11.20 a.sh
 ```
 
-如果要对已经运行的进程，不想停掉进程，来设置 nice 值，可以使用 renice：
+如果要对已经运行的进程，不想停掉进程，来设置 `nice` 值，可以使用 `renice`：
 
 ```bash
 [root@pooky ~]# renice -n 15 23780
@@ -324,7 +324,7 @@ KiB Swap:        0 total,        0 free,        0 used. 14391492 avail Mem
 
 ### jobs
 
-加上 `&` 可以使进程后台运行，要把后台运行的进程掉回前台，使用 jobs 命令：
+加上 `&` 可以使进程后台运行，要把后台运行的进程掉回前台，使用 `jobs` 命令：
 
 ```bash
 [root@pooky ~]# ./a.sh &
@@ -474,16 +474,16 @@ lrwx------. 1 root root 64 Jun 22 10:21 4 -> socket:[27757]
 只要 screen 本身没有终止，在其内部运行的会话都可以恢复。这一点对于远程登录的用户特别有用，即使网络连接中断，用户也不会失去对已经打开的命令行会话的控制。
 只要再次登录到主机上执行 `screen -r` 就可以恢复会话的运行。
 
-- 执行 `screen` 命令进入 screen 环境
-- `ctrl+a` 再按 `d` 退出 screen 环境
-- `screen -ls` 查看 screen 的 session
-- `screen -r <sessionId>` 恢复指定 session
+- 执行 `screen` 命令进入 screen 环境。
+- `ctrl+a` 再按 `d` 退出 screen 环境。
+- `screen -ls` 查看 screen 的 session。
+- `screen -r <sessionId>` 恢复指定 session。
 
 ### 系统日志
 
 系统日志一般在 `/var/log` 目录下。一些重要的日志：
 
-- `messages` 是系统的常规日志。
-- `dmesg` 系统内核的启动日志。
-- `secure` 系统的安全日志。
-- `cron` 系统的计划任务日志。
+- `messages`：是系统的常规日志。
+- `dmesg`：系统内核的启动日志。
+- `secure`：系统的安全日志。
+- `cron`：系统的计划任务日志。
