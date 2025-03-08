@@ -1,3 +1,9 @@
+---
+title: epoll
+weight: 3
+draft: true
+---
+
 # epoll
 
 epoll 是为解决 Linux 内核处理大量文件描述符而提出的方案。属于 Linux 下多路 I/O 复用接口中 select/poll 的增强。

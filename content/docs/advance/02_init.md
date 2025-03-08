@@ -1,4 +1,9 @@
-# 系统初始化
+---
+title: 系统初始化
+weight: 2
+draft: true
+---
+
 
 ## CPU
 

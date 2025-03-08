@@ -3,8 +3,6 @@ title: FTP
 weight: 19
 ---
 
-# FTP
-
 ftp 协议的全称是文件传输协议。
 
 FTP 采用两个 TCP 连接来传输一个文件：

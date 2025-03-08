@@ -2,38 +2,14 @@
 title: 主要内容
 ---
 
-# OS Learning
-
 ## 主要内容
 
-{{< columns >}}
-
-### 🍚 计算机基础
-
-计算机组成。
-
-<--->
-
-### 🛠️ Linux 常用命令
-
-Vim，用户管理，权限管理，进程管理等。
-
-{{< /columns >}}
-
-
-{{< columns >}}
-
-### ⚡ Linux 性能优化
-
-Linux CPU，内存，IO，网络。
-
-<--->
-
-### 🔍 操作系统导论学习笔记
-
-操作系统导论学习笔记。
-
-{{< /columns >}}
+{{< cards cols="2" >}}
+{{< card link="/os-learn/docs/basic" title="计算机基础" icon="code" subtitle="计算机组成。" >}}
+{{< card link="/os-learn/docs/commands" title="Linux 常用命令" icon="color-swatch" subtitle="Vim，用户管理，权限管理，进程管理等。" >}}
+{{< card link="/os-learn/docs/performance" title="Linux 性能优化" icon="lightning-bolt" subtitle="Linux CPU，内存，IO，网络性能优化。" >}}
+{{< card link="/os-learn/docs/advance" title="Linux 原理" icon="beaker" subtitle="Linux 底层实现原理。" >}}
+{{< /cards >}}
 
 ## 互动与勘误
 

@@ -3,8 +3,6 @@ title: NFS
 weight: 20
 ---
 
-# NFS
-
 NFS 在 Linux 中会默认安装。
 
 NFS 的主配置文件：`/etc/exports`。

@@ -1,6 +1,7 @@
 ---
 title: Linux 内存
 weight: 2
+draft: true
 ---
 
 # Linux 内存

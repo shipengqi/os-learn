@@ -1,6 +1,7 @@
 ---
 title: Linux CPU
 weight: 1
+draft: true
 ---
 
 # Linux CPU

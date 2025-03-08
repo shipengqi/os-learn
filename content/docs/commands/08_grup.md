@@ -3,8 +3,6 @@ title: grup
 weight: 8
 ---
 
-# grup
-
 grup 是内核启动的引导软件。
 
 CentOS 6 grup 所有文件需要手动修改。CentOS 7 提供了命令行工具。

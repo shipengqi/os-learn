@@ -3,8 +3,6 @@ title: 网络管理
 weight: 6
 ---
 
-# 网络管理
-
 `net-tools` 是 CentOS 7 之前的版本使用的网络管理工具，而 `iproute2` 是 CentOS 7 之后主推的网络管理工具。
 
 ## net-tools

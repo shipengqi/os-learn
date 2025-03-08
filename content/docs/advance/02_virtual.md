@@ -1,3 +1,9 @@
+---
+title: 虚拟化
+weight: 3
+draft: true
+---
+
 # 虚拟化
 
 什么是虚拟化？

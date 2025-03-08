@@ -1,5 +1,4 @@
 ---
-title: 操作系统导论学习笔记
+title: Linux 原理
 weight: 4
-draft: true
 ---

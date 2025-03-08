@@ -1,6 +1,7 @@
 ---
 title: 计算机的组成
 weight: 1
+draft: true
 ---
 
 # 计算机的组成

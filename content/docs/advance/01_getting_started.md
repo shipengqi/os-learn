@@ -1,3 +1,9 @@
+---
+title: na
+weight: 1
+draft: true
+---
+
 Linux 学习的六个阶段：
 
 熟练使用 Linux 命令

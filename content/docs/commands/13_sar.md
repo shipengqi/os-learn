@@ -3,8 +3,6 @@ title: 查看系统状态
 weight: 13
 ---
 
-# 查看系统状态
-
 ## sar
 
 ```bash

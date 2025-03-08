@@ -3,8 +3,6 @@ title: 打包压缩
 weight: 2
 ---
 
-# 打包压缩
-
 Linux 里面打包和压缩是分开的两个命令：
 
 - `tar`：打包备份，`tar -cf /tmp/backup.tar /etc` 把 `/etc` 目录打包到 `/tmp/backup.tar` 文件。

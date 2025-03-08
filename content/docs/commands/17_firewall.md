@@ -3,8 +3,6 @@ title: 防火墙
 weight: 17
 ---
 
-# 防火墙
-
 防火墙分为两类：
 
 - 软件防火墙，CentOS 6 的默认防火墙是 iptables，CentOS 7 的默认防火墙是 firewalld，底层都是使用内核中的 netfilter。

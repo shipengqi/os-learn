@@ -3,8 +3,6 @@ title: SELinux
 weight: 11
 ---
 
-# SELinux
-
 安全增强型 Linux（Security-Enhanced Linux）简称 SELinux，它是一个 Linux 内核模块，也是 Linux 的一个安全子系统。
 
 没有使用 SELinux 的 Linux 是通过用户的权限和文件权限来做安全控制，这叫做 DAC（自主访问控制）。最致命问题是，root 用户不受任何管制，系统上任何资源都可以无限制地访问。
