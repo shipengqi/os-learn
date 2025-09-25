@@ -1,10 +1,7 @@
 ---
-title: Linux 内存
+title: 内存性能优化
 weight: 2
-draft: true
 ---
-
-# Linux 内存
 
 ## 虚拟内存
 
@@ -48,6 +45,8 @@ Linux 使用四级页表来管理内存页，虚拟地址分为 5 部分，前 4
 
 ## Buffer 和 Cache
 
+free 和 top 等工具，可以查看系统和进程的内存使用情况。
+
 ```bash
 [root@pooky ~]# free -m
               total        used        free      shared  buff/cache   available
@@ -62,13 +61,124 @@ Swap:             0           0           0
 
 Buffer 是缓冲区，而 Cache 是缓存，两者都是数据在内存中的临时存储。
 
-`free` 的数据来自 `/proc/meminfo`。
+- Buffers 用于缓存**磁盘块的元数据**（如 inode、文件权限等）和**原始磁盘块的 I/O** 操作（例如直接读写磁盘块，未经文件系统抽象）。读取文件时，内核会先检查文件系统元数据（如文件位置、权限），这些元数据可能缓存在 Buffers 中，也用于 写操作缓冲，暂存待写入磁盘的数据，以减少直接磁盘 I/O 的次数。Buffers 是内核缓冲区用到的内存，对应的是 `/proc/meminfo` 中的 Buffers 值。
+- **Cache 与 文件 相关，是文件系统层的缓存**。文件内容会被缓存在 Cache 中，下次访问时直接从内存读取，避免磁盘 I/O。修改文件时，数据先写入 Cache，后续由内核异步刷盘。Cache 是内核页缓存和 Slab 用到的内存，对应的是 `/proc/meminfo` 中的 Cached 与 SReclaimable 之和。
+- SReclaimable 是 Slab 的一部分。Slab 包括两部分，其中的可回收部分，用 SReclaimable 记录；而不可回收部分，用 SUnreclaim 记录。
 
-**Buffer 是对磁盘数据的缓存，而 Cache 是文件数据的缓存，它们既会用在读请求中，也会用在写请求中**。
+Buffers 个 Cached 它们既会用在读请求中，也会用在写请求中。
 
-磁盘是一个块设备，可以划分为不同的分区；在分区之上再创建文件系统，挂载到某个目录，之后才可以在这个目录中读写文件。 其实 Linux 中“一切皆文件”，而文章中提到的“文件”是普通文件，磁盘是块设备文件，这些大家可以执行 `ls -l <路径>`。 在读写普通文件时，会经过文件系统，由文件系统负责与磁盘交互；而读写磁盘或者分区时，就会跳过文件系统，也就是所谓的 `裸 I/O` 。这两种读写方式所使用的缓存是不同的，也就是 Cache 和 Buffer 区别。
+磁盘是一个块设备，可以划分为不同的分区；在分区之上再创建文件系统，挂载到某个目录，之后才可以在这个目录中读写文件。 其实 Linux 中“一切皆文件”，而文章中提到的“文件”是普通文件，磁盘是块设备文件，这些大家可以执行 `ls -l <路径>`。 在读写普通文件时，会经过文件系统，由文件系统负责与磁盘交互；而读写磁盘或者分区时，就会跳过文件系统，也就是所谓的 **`裸 I/O`** 。这两种读写方式所使用的缓存是不同的，也就是 Cache 和 Buffer 区别。
 
-## 内存泄漏
+**`free` 的数据来自 `/proc/meminfo`**。
+
+### 实战案例
+
+在第一个终端，运行下面 vmstat 命令：
+
+```bash
+# 每隔 1 秒输出 1 组数据
+$ vmstat 1
+procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
+r  b   swpd   free   buff  cache    si   so    bi    bo   in   cs us sy id wa st
+0  0      0 7743608   1112  92168    0    0     0     0   52  152  0  1 100  0  0
+ 0  0      0 7743608   1112  92168    0    0     0     0   36   92  0  0 100  0  0
+```
+
+- `buff` 和 `cache` 就是 Buffers 和 Cache，单位是 KB。
+- `bi` 和 `bo` 则分别表示块设备读取和写入的大小，单位为 `块/秒`。因为 Linux 中块的大小是 1KB，所以这个单位也就等价于 `KB/s`。
+
+第二个终端执行 dd 命令，通过读取随机设备，生成一个 500MB 大小的文件：
+
+```bash
+$ dd if=/dev/urandom of=/tmp/file bs=1M count=500
+```
+
+再回到第一个终端，观察 Buffer 和 Cache 的变化情况：
+
+```bash
+procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
+r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
+0  0      0 7499460   1344 230484    0    0     0     0   29  145  0  0 100  0  0
+ 1  0      0 7338088   1752 390512    0    0   488     0   39  558  0 47 53  0  0
+ 1  0      0 7158872   1752 568800    0    0     0     4   30  376  1 50 49  0  0
+ 1  0      0 6980308   1752 747860    0    0     0     0   24  360  0 50 50  0  0
+ 0  0      0 6977448   1752 752072    0    0     0     0   29  138  0  0 100  0  0
+ 0  0      0 6977440   1760 752080    0    0     0   152   42  212  0  1 99  1  0
+...
+ 0  1      0 6977216   1768 752104    0    0     4 122880   33  234  0  1 51 49  0
+ 0  1      0 6977440   1768 752108    0    0     0 10240   38  196  0  0 50 50  0
+```
+
+在 dd 命令运行时，可以观察到 Cache 在不停地增长，而 Buffer 基本保持不变。
+
+进一步观察 I/O 的情况：
+
+- 在 Cache 刚开始增长时，块设备 I/O 很少，bi 只出现了一次 `488 KB/s`，bo 则只有一次 4KB。而过一段时间后，才会出现大量的块设备写，比如 bo 变成了 122880。
+- 当 dd 命令结束后，Cache 不再增长，但块设备写还会持续一段时间，并且，多次 I/O 写的结果加起来，才是 dd 要写的 500M 的数据。
+
+写文件时会用到 Cache 缓存数据，而写磁盘则会用到 Buffer 来缓存数据。
+
+### 如何利用系统缓存优化程序的运行效率？
+
+**缓存的命中率越高，表示使用缓存带来的收益越高，应用程序的性能也就越好**。
+
+缓存是现在所有高并发系统必需的核心模块，主要作用就是把经常访问的数据（也就是热点数据），提前读入到内存中。这样，下次访问时就可以直接从内存读取数据，而不需要经过硬盘，从而加快应用程序的响应速度。
+
+cachestat 和 cachetop ，是查看系统缓存命中情况的工具。
+
+- cachestat 提供了整个操作系统缓存的读写命中情况。
+- cachetop 提供了每个进程的缓存命中情况。
+
+使用 cachestat 和 cachetop 前，我们首先要安装 bcc 软件包：
+
+```bash
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4052245BD4284CDD
+echo "deb https://repo.iovisor.org/apt/xenial xenial main" | sudo tee /etc/apt/sources.list.d/iovisor.list
+sudo apt-get update
+sudo apt-get install -y bcc-tools libbcc-examples linux-headers-$(uname -r)
+```
+
+> 注意：bcc-tools 需要内核版本为 4.1 或者更新的版本，如果你用的是 CentOS，那就需要手动[升级内核版本后再安装](https://github.com/iovisor/bcc/issues/462)。
+
+bcc 软件包默认不会把这些工具配置到系统的 PATH 路径中，所以需要手动配置：
+
+```bash
+$ export PATH=$PATH:/usr/share/bcc/tools
+```
+
+运行 cachestat：
+
+```bash
+$ cachestat 1 3
+   TOTAL   MISSES     HITS  DIRTIES   BUFFERS_MB  CACHED_MB
+       2        0        2        1           17        279
+       2        0        2        1           17        279
+       2        0        2        1           17        279 
+```
+
+- `TOTAL`：表示总的 I/O 次数；
+- `MISSES`：表示缓存未命中的次数；
+- `HITS`：表示缓存命中的次数；
+- `DIRTIES`：表示新增到缓存中的脏页数；
+- `BUFFERS_MB`：表示 Buffers 的大小，以 MB 为单位；
+- `CACHED_MB`：表示 Cache 的大小，以 MB 为单位。
+
+cachetop 的运行界面：
+
+```bash
+$ cachetop
+11:58:50 Buffers MB: 258 / Cached MB: 347 / Sort: HITS / Order: ascending
+PID      UID      CMD              HITS     MISSES   DIRTIES  READ_HIT%  WRITE_HIT%
+   13029 root     python                  1        0        0     100.0%       0.0%
+```
+
+默认按照缓存的命中次数（HITS）排序，展示了每个进程的缓存命中情况。`READ_HIT%` 和 `WRITE_HIT%` ，分别表示读和写的缓存命中率。
+
+Buffers 和 Cache 都是操作系统来管理的，应用程序并不能直接控制这些缓存的内容和生命周期。所以，在应用程序开发中，一般要用专门的缓存组件，来进一步提升性能。
+
+比如，程序内部可以使用堆或者栈明确声明内存空间，来存储需要缓存的数据。再或者，使用 Redis 这类外部缓存服务，优化数据的访问效率。
+
+## 内存泄漏如何定位？
 
 对于一个进程，看到的内存是虚拟内存，由系统通过页表映射为物理内存。
 
@@ -109,9 +219,27 @@ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
 
 如何确定是否有内存泄漏？
 
-- memleak，一个专门用来检测内存泄漏的工具，可以跟踪系统或指定进程的内存分配、释放请求，然后定期输出一个未释放内存和相应调用栈的汇总情况（默认 5 秒）。
+memleak，是 bcc 软件包中的一个工具，一个专门用来检测内存泄漏的工具，可以跟踪系统或指定进程的内存分配、释放请求，然后定期输出一个未释放内存和相应调用栈的汇总情况（默认 5 秒）。
 
-## Swap
+```bash
+# -a 表示显示每个内存分配请求的大小以及地址
+# -p 指定案例应用的 PID 号
+$ memleak -a -p $(pidof app)
+WARNING: Couldn't find .text section in /app
+WARNING: BCC can't handle sym look ups for /app
+    addr = 7f8f704732b0 size = 8192
+    addr = 7f8f704772d0 size = 8192
+    addr = 7f8f704712a0 size = 8192
+    addr = 7f8f704752c0 size = 8192
+    32768 bytes in 4 allocations from stack
+        [unknown] [app]
+        [unknown] [app]
+        start_thread+0xdb [libpthread-2.27.so] 
+```
+
+从 memleak 的输出可以看到，案例应用在不停地分配内存，并且这些分配的地址没有被回收。
+
+## 为什么系统的 Swap 高了
 
 当发生了内存泄漏，或者运行了大内存的应用，导致内存资源紧张时，会导致两种结果：内存回收和 OOM 杀死进程。
 
@@ -133,13 +261,13 @@ Swap 有两个过程：
 - 换出，就是把进程暂时不用的内存数据存储到磁盘，并释放这些内存。
 - 换入，在进程再次访问这些内存的时候，把它们从磁盘中读到内存中。
 
-常见的电脑的休眠和快速开机也是基于 Swap。在休眠时，把系统内存存入磁盘，再次开机时，从磁盘中加载到内存，可以节省程序初始化的过程。
+常见的**电脑的休眠和快速开机也是基于 Swap。在休眠时，把系统内存存入磁盘，再次开机时，从磁盘中加载到内存，可以节省程序初始化的过程**。
 
 什么时候需要回收内存？
 
 一个场景就是，有新的大块内存分配请求，但是剩余内存不足。这个时候系统就需要回收一部分内存（比如 Buffer 和 Cache），进而尽可能地满足新内存请求。这个过程通常被称为**直接内存回收**。
 
-除了直接内存回收，还有一个专门的内核线程用来定期回收内存，也就是 `kswapd0`。为了衡量内存的使用情况，`kswapd0` 定义了三个内存阈值（watermark，也称为水位），分别是
+除了直接内存回收，还有一个**专门的内核线程用来定期回收内存，也就是 `kswapd0`**。为了衡量内存的使用情况，`kswapd0` 定义了三个内存阈值（watermark，也称为水位），分别是
 
 页最小阈值（pages_min）、页低阈值（pages_low）和页高阈值（pages_high）。剩余内存，则使用 pages_free 表示。
 
@@ -149,7 +277,7 @@ Swap 有两个过程：
 
 这些回收的内存既包括了文件页，又包括了匿名页。
 
-- 对文件页的回收，当然就是直接回收缓存，或者把脏页写回磁盘后再回收。
+- **对文件页的回收，当然就是直接回收缓存，或者把脏页写回磁盘后再回收**。
 - 而对匿名页的回收，其实就是通过 Swap 机制，把它们写入磁盘后再释放内存。
 
 实际回收内存时，到底该先回收哪一种？
@@ -171,10 +299,173 @@ swappiness 的范围是 0-100，数值越大，越积极使用 Swap，也就是�
 
 - 禁止 Swap，现在服务器的内存足够大，所以除非有必要，禁用 Swap 就可以了。随着云计算的普及，大部分云平台中的虚拟机都默认禁止 Swap。
 - 如果实在需要用到 Swap，可以尝试降低 swappiness 的值，减少内存回收时 Swap 的使用倾向。
-- 响应延迟敏感的应用，如果它们可能在开启 Swap 的服务器中运行，你还可以用库函数 `mlock` 或者 `mlockall` 锁定内存，阻止它们的内存换出。
+- 响应延迟敏感的应用，如果它们可能在开启 Swap 的服务器中运行，你还可以用库函数 `mlock` 或者 `mlockall` 锁定内存，阻止它们的内存换出
+
+#### 实战案例
+
+运行 free 命令，查看 Swap 的使用情况。
+
+```bash
+$ free
+             total        used        free      shared  buff/cache   available
+Mem:        8169348      331668     6715972         696     1121708     7522896
+Swap:             0           0           0
+```
+
+Swap 的大小是 0，这说明机器没有配置 Swap。
+
+开启 Swap，首先要清楚，Linux 本身支持两种类型的 Swap，即 **Swap 分区**和 **Swap 文件**。以 Swap 文件为例，在第一个终端中运行下面的命令开启 Swap，这里配置 Swap 文件的大小为 8GB：
+
+```bash
+# 创建 Swap 文件
+$ fallocate -l 8G /mnt/swapfile
+# 修改权限只有根用户可以访问
+$ chmod 600 /mnt/swapfile
+# 配置 Swap 文件
+$ mkswap /mnt/swapfile
+# 开启 Swap
+$ swapon /mnt/swapfile
+# 执行 free 命令，确认 Swap 配置成功
+# Swap 空间以及剩余空间都从 0 变成了 8GB，说明 Swap 已经正常开启
+$ free
+             total        used        free      shared  buff/cache   available
+Mem:        8169348      331668     6715972         696     1121708     7522896
+Swap:       8388604           0     8388604
+```
+
+在第一个终端中，运行下面的 dd 命令，模拟大文件的读取：
+
+```bash
+# 写入空设备，实际上只有磁盘的读请求
+$ dd if=/dev/sda1 of=/dev/null bs=1G count=2048
+```
+
+在第二个终端中运行 sar 命令，查看内存各个指标的变化情况：
+
+```bash
+# 间隔 1 秒输出一组数据
+# -r 表示显示内存使用情况，-S 表示显示 Swap 使用情况
+$ sar -r -S 1
+04:39:56    kbmemfree   kbavail kbmemused  %memused kbbuffers  kbcached  kbcommit   %commit  kbactive   kbinact   kbdirty
+04:39:57      6249676   6839824   1919632     23.50    740512     67316   1691736     10.22    815156    841868         4
+ 
+04:39:56    kbswpfree kbswpused  %swpused  kbswpcad   %swpcad
+04:39:57      8388604         0      0.00         0      0.00
+ 
+04:39:57    kbmemfree   kbavail kbmemused  %memused kbbuffers  kbcached  kbcommit   %commit  kbactive   kbinact   kbdirty
+04:39:58      6184472   6807064   1984836     24.30    772768     67380   1691736     10.22    847932    874224        20
+ 
+04:39:57    kbswpfree kbswpused  %swpused  kbswpcad   %swpcad
+04:39:58      8388604         0      0.00         0      0.00
+ 
+…
+ 
+ 
+04:44:06    kbmemfree   kbavail kbmemused  %memused kbbuffers  kbcached  kbcommit   %commit  kbactive   kbinact   kbdirty
+04:44:07       152780   6525716   8016528     98.13   6530440     51316   1691736     10.22    867124   6869332         0
+ 
+04:44:06    kbswpfree kbswpused  %swpused  kbswpcad   %swpcad
+04:44:07      8384508      4096      0.05        52      1.27
+```
+
+sar 的输出结果是两个表格，第一个表格表示内存的使用情况，第二个表格表示 Swap 的使用情况。其中，各个指标名称前面的 kb 前缀，表示这些指标的单位是 KB。
+
+去掉前缀后，大部分指标都已经见过了，剩下的几个新出现的指标：
+
+- **kbcommit，表示当前系统负载需要的内存**。它实际上是为了保证系统内存不溢出，对需要内存的估计值。`%commit`，就是这个值相对总内存的百分比。
+- **kbactive，表示活跃内存，也就是最近使用过的内存**，一般不会被系统回收。
+- **kbinact，表示非活跃内存，也就是不常访问的内存**，有可能会被系统回收。
+
+总的内存使用率（%memused）在不断增长，从开始的 23% 一直长到了 98%，并且主要内存都被缓冲区（kbbuffers）占用。具体来说：
+
+- 刚开始，剩余内存（kbmemfree）不断减少，而缓冲区（kbbuffers）则不断增大，由此可知，剩余内存不断分配给了缓冲区。
+- 一段时间后，剩余内存已经很小，而缓冲区占用了大部分内存。这时候，Swap 的使用开始逐渐增大，缓冲区和剩余内存则只在小范围内波动。
+
+为什么缓冲区在不停增大？
+
+cachetop 观察缓存的使用情况：
+
+```bash
+$ cachetop 5
+12:28:28 Buffers MB: 6349 / Cached MB: 87 / Sort: HITS / Order: ascending
+PID      UID      CMD              HITS     MISSES   DIRTIES  READ_HIT%  WRITE_HIT%
+   18280 root     python                 22        0        0     100.0%       0.0%
+   18279 root     dd                  41088    41022        0      50.0%      50.0%
+```
+
+dd 进程的读写请求只有 50% 的命中率，并且未命中的缓存页数（MISSES）为 41022（单位是页）。这说明，正是开始时运行的 dd，导致了缓冲区使用升高。
+
+为什么 Swap 也跟着升高了？
+
+进一步通过 `/proc/zoneinfo`，观察剩余内存、内存阈值以及匿名页和文件页的活跃情况。
+
+在第二个终端中，按下 `Ctrl+C`，停止 cachetop 命令。然后运行下面的命令，观察 `/proc/zoneinfo` 中这几个指标的变化情况：
+
+```bash
+# -d 表示高亮变化的字段
+# -A 表示仅显示 Normal 行以及之后的 15 行输出
+$ watch -d grep -A 15 'Normal' /proc/zoneinfo
+Node 0, zone   Normal
+  pages free     21328
+        min      14896
+        low      18620
+        high     22344
+        spanned  1835008
+        present  1835008
+        managed  1796710
+        protection: (0, 0, 0, 0, 0)
+      nr_free_pages 21328
+      nr_zone_inactive_anon 79776
+      nr_zone_active_anon 206854
+      nr_zone_inactive_file 918561
+      nr_zone_active_file 496695
+      nr_zone_unevictable 2251
+      nr_zone_write_pending 0
+```
+
+剩余内存（pages_free）在一个小范围内不停地波动。当它小于页低阈值（pages_low）时，又会突然增大到一个大于页高阈值（pages_high）的值。
+
+可以推导出，剩余内存和缓冲区的波动变化，正是由于内存回收和缓存再次分配的循环往复。
+
+- 当剩余内存小于页低阈值时，系统会回收一些缓存和匿名内存，使剩余内存增大。其中，缓存的回收导致 sar 中的缓冲区减小，而匿名内存的回收导致了 Swap 的使用增大。
+- 紧接着，由于 dd 还在继续，剩余内存又会重新分配给缓存，导致剩余内存减少，缓冲区增大。
+
+### 小结
+
+在内存资源紧张时，Linux 会通过 Swap ，把不常访问的匿名页换出到磁盘中，下次访问的时候再从磁盘换入到内存中来。你可以设置 /proc/sys/vm/min_free_kbytes，来调整系统定期回收内存的阈值；也可以设置 /proc/sys/vm/swappiness，来调整文件页和匿名页的回收倾向。
+
+当 Swap 变高时，你可以用 sar、/proc/zoneinfo、/proc/pid/status 等方法，查看系统和进程的内存使用情况，进而找出 Swap 升高的根源和受影响的进程。
+
+反过来说，通常，降低 Swap 的使用，可以提高系统的整体性能。要怎么做呢？这里，我也总结了几种常见的降低方法。
+
+禁止 Swap，现在服务器的内存足够大，所以除非有必要，禁用 Swap 就可以了。随着云计算的普及，大部分云平台中的虚拟机都默认禁止 Swap。
+
+如果实在需要用到 Swap，可以尝试降低 swappiness 的值，减少内存回收时 Swap 的使用倾向。
+
+响应延迟敏感的应用，如果它们可能在开启 Swap 的服务器中运行，你还可以用库函数 mlock() 或者 mlockall() 锁定内存，阻止它们的内存换出。
 
 ## 内存性能分析
 
 ### 内存性能指标
 
+系统内存使用情况：
+
+- **已用内存**和**剩余内存**，就是已经使用和还未使用的内存。
+- 共享内存是通过 tmpfs 实现的，所以它的大小也就是 tmpfs 使用的内存大小。tmpfs 其实也是一种特殊的缓存。
+- 可用内存是新进程可以使用的最大内存，它包括剩余内存和可回收缓存。
+- 缓存包括两部分，一部分是磁盘读取文件的页缓存，用来缓存从磁盘读取的数据，可以加快以后再次访问的速度。另一部分，则是 Slab 分配器中的可回收内存。
+- **缓冲区**是对原始磁盘块的临时存储，用来缓存将要写入磁盘的数据。这样，内核就可以把分散的写集中起来，统一优化磁盘写入。
+
+进程内存使用情况：
+
+- 虚拟内存，包括了进程代码段、数据段、共享内存、已经申请的堆内存和已经换出的内存等。这里要注意，已经申请的内存，即使还没有分配物理内存，也算作虚拟内存。
+- 常驻内存是进程实际使用的物理内存，不过，它不包括 Swap 和共享内存。
+- 共享内存，既包括与其他进程共同使用的真实的共享内存，还包括了加载的动态链接库以及程序的代码段等。
+- Swap 内存，是指通过 Swap 换出到磁盘的内存。
+
 ### 内存分析工具
+
+1. free 是最常用的内存工具，可以查看系统的整体内存和 Swap 使用情况。相对应的，你可以用 top 或 ps，查看进程的内存使用情况。
+2. vmstat，动态观察了内存的变化情况。与 free 相比，vmstat 除了可以动态查看内存变化，还可以区分缓存和缓冲区、Swap 换入和换出的内存大小。
+3. cachestat，查看整个系统缓存的读写命中情况，并用 cachetop 来观察每个进程缓存的读写命中情况。
+4. 用 memleak，确认内存泄漏。通过 memleak 给出的内存分配栈，确认内存泄漏的可疑位置。

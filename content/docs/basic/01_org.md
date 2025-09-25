@@ -4,9 +4,8 @@ weight: 1
 draft: true
 ---
 
-# 计算机的组成
-
 ## 基本硬件组成
+
 CPU、内存和主板
 
 CPU（Central Processing Unit）是计算机最重要的核心配件
